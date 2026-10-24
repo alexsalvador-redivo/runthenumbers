@@ -47,6 +47,6 @@ There are no automated tests yet. The first job before any refactor is a golden-
 
 1. Orient and plan (done): this file, git repository.
 2. Golden tests that lock in today's tax and simulation results.
-3. Standalone page: proper HTML skeleton, self-hosted fonts and jsPDF, PDF saved as a normal browser download, Claude-only features removed or replaced.
+3. Standalone page: proper HTML skeleton, self-hosted fonts and jsPDF, PDF saved as a normal browser download, and the Claude-only features (Ask about your plan, Explain these plans) removed for version 1 (Alex's decision, 2026-10-24).
 4. PWA: manifest, icons, service worker for offline use, install prompt.
 5. Netlify: `netlify.toml`, security headers (strict CSP with no outside connections), deploy from GitHub.
