@@ -16,7 +16,7 @@
       <h1>Run The Numbers</h1>
       <p class="sub">Retirement projection for Canadians, on your own or as a couple, in any province or territory, in today's dollars. <b>Your figures are kept in this browser only.</b></p>
     </div>
-    <div class="head-right"><button class="btn" type="button" id="btnReport" hidden>Report (PDF)</button><button class="btn" type="button" id="btnQuick">Quick start</button><div class="scen" id="scenTabs" role="group" aria-label="Scenarios"></div></div>
+    <div class="head-right"><button class="btn" type="button" id="btnReport">Report (PDF)</button><button class="btn" type="button" id="btnQuick">Quick start</button><div class="scen" id="scenTabs" role="group" aria-label="Scenarios"></div></div>
   </header>
 
   <section class="quick" id="quick" hidden aria-labelledby="qTitle">
@@ -58,22 +58,6 @@
         <div class="chart-box" id="chartBox"><canvas id="chart" aria-label="Stacked chart of investment balances by year"></canvas><div class="tip" id="tip" hidden></div></div>
         <p class="note" id="chartNote">Dashed lines mark each retirement; the dotted line marks the first death. Home equity is not drawn.</p>
       </div>
-      <div class="panel ask" id="askPanel" hidden>
-        <div class="chart-head"><h2>Ask about your plan</h2><button class="linkbtn" type="button" id="askClear">Clear</button></div>
-        <p class="note" style="margin:0 0 8px">Claude reads the plan you're looking at, tests changes for you, and can suggest one to apply. Your plan's numbers are sent to Claude when you ask, using your Claude account. It isn't financial advice.</p>
-        <div class="ask-log" id="askLog" aria-live="polite"></div>
-        <div class="chips" id="askChips">
-          <button type="button" class="chip">What's the biggest risk in our plan?</button>
-          <button type="button" class="chip">Should we take CPP at 65 or 70?</button>
-          <button type="button" class="chip">How can we pay less tax over our lifetime?</button>
-          <button type="button" class="chip">How much more could we safely spend?</button>
-        </div>
-        <form class="ask-form" id="askForm">
-          <textarea id="askBox" rows="2" placeholder="Ask anything about your plan…" aria-label="Your question"></textarea>
-          <button class="btn primary" type="submit" id="askSend">Ask</button>
-          <button class="btn" type="button" id="askStop" hidden>Stop</button>
-        </form>
-      </div>
       <div class="panel" id="risk">
         <div class="chart-head"><h2>Market risk</h2><button class="btn" id="btnMC" type="button">Run 500 market histories</button></div>
         <div class="stress" id="stress"></div>
@@ -97,8 +81,6 @@
         </div>
         <p class="solve-out" id="optStatus" role="status"></p>
         <div class="opt-list" id="optOut"></div>
-        <div class="actions" style="margin-top:10px"><button class="btn" id="optExplain" type="button" hidden>Explain these plans</button></div>
-        <div class="opt-why" id="optWhy" aria-live="polite"></div>
       </div>
       <div class="panel" id="solver">
         <h2 style="margin-bottom:6px">What would it take?</h2>
