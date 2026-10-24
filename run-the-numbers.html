@@ -1,0 +1,1736 @@
+<title>Run The Numbers</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: results pane (summary, chart, table) beside a scrolling input ledger; stacks results-first on phones. */
+:root{
+  --bg:#f3f6f5; --surface:#ffffff; --sunk:#e9efed; --fg:#16201d; --muted:#5a6a65; --line:#d7e0dd;
+  --accent:#1c6a54; --accent-ink:#ffffff; --accent-soft:#dcece6;
+  --good:#1d7a52; --warn:#a86a12; --bad:#b0412c; --bad-soft:#f6e3df; --good-soft:#dff0e6;
+  --s-rrsp:#3166a8; --s-tfsa:#1f8f6c; --s-nonreg:#c48a2a; --s-cash:#8679b6;
+  --f-display:"Bricolage Grotesque", "Hanken Grotesk", system-ui, sans-serif;
+  --f-body:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-num:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1514; --surface:#172020; --sunk:#121a19; --fg:#e4ebe8; --muted:#93a39d; --line:#293532;
+  --accent:#4dbb94; --accent-ink:#06120e; --accent-soft:#1d3a31;
+  --good:#5ccf95; --warn:#e2a64a; --bad:#ec7a63; --bad-soft:#3a1f1a; --good-soft:#173528;
+  --s-rrsp:#6c9fe0; --s-tfsa:#4fc69c; --s-nonreg:#e0ad55; --s-cash:#ad9fe0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1514; --surface:#172020; --sunk:#121a19; --fg:#e4ebe8; --muted:#93a39d; --line:#293532;
+  --accent:#4dbb94; --accent-ink:#06120e; --accent-soft:#1d3a31;
+  --good:#5ccf95; --warn:#e2a64a; --bad:#ec7a63; --bad-soft:#3a1f1a; --good-soft:#173528;
+  --s-rrsp:#6c9fe0; --s-tfsa:#4fc69c; --s-nonreg:#e0ad55; --s-cash:#ad9fe0; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1320px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:18px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,3.4vw,36px);letter-spacing:-.02em;margin:0;line-height:1.05}
+.sub{color:var(--muted);margin:4px 0 0;max-width:60ch}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+
+/* scenario tabs */
+.scen{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tab{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:6px 12px;border-radius:999px;cursor:pointer}
+.tab[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tab.ghost{background:transparent;border-style:dashed;color:var(--muted)}
+.tab:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,440px);gap:20px;align-items:start}
+.results{display:flex;flex-direction:column;gap:16px;min-width:0;position:sticky;top:env(safe-area-inset-top,0px)}
+.inputs{display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (max-width:920px){.grid{grid-template-columns:minmax(0,1fr)}.results{position:static}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+
+/* verdict */
+.verdict{display:flex;flex-direction:column;gap:4px;padding:18px 18px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.verdict.ok{background:var(--good-soft);border-color:transparent}
+.verdict.short{background:var(--bad-soft);border-color:transparent}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.verdict .big{font-family:var(--f-display);font-weight:700;font-size:clamp(24px,3vw,32px);line-height:1.1;letter-spacing:-.015em;text-wrap:balance}
+.verdict.ok .big{color:var(--good)} .verdict.short .big{color:var(--bad)}
+.verdict p{margin:2px 0 0;color:var(--fg);max-width:70ch}
+
+.takeaways{margin:10px 0 0;padding:10px 0 0 18px;border-top:1px solid color-mix(in srgb,var(--fg) 14%,transparent);display:flex;flex-direction:column;gap:6px;font-size:14px;max-width:72ch}
+.takeaways:empty{display:none}
+.report-msg{margin:0;font-size:13.5px;color:var(--accent)}
+.report-msg:empty{display:none}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.stats{grid-template-columns:minmax(0,1fr)}}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat .v{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:20px;font-weight:500}
+.stat .k{font-size:13px;color:var(--muted)}
+
+/* chart */
+.chart-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;align-items:baseline;margin-bottom:8px}
+.chart-head h2,.panel h2{font-size:16px;margin:0;font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.chart-box{position:relative;width:100%;height:300px}
+canvas{display:block;width:100%;height:100%}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,.12);min-width:170px;z-index:2}
+.tip b{display:block;font-size:13px;margin-bottom:4px}
+.tip div{display:flex;justify-content:space-between;gap:12px}
+.tip .num{font-size:12px}
+.note{font-size:13px;color:var(--muted);margin:8px 0 0}
+
+/* compare */
+.compare{display:flex;flex-direction:column;gap:6px}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:center;font-size:14px;padding:6px 0;border-top:1px solid var(--line)}
+.crow:first-of-type{border-top:0}
+.pill{font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--good-soft);color:var(--good)} .pill.short{background:var(--bad-soft);color:var(--bad)}
+
+/* table */
+details.yby summary{cursor:pointer;font-weight:700;font-size:16px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px}
+details.yby summary::-webkit-details-marker{display:none}
+details.yby summary::after{content:"Show";font-size:13px;font-weight:600;color:var(--accent)}
+details.yby[open] summary::after{content:"Hide"}
+.tbl-wrap{overflow-x:auto;margin-top:12px;max-height:520px;overflow-y:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;font-size:12.5px;width:100%;min-width:1080px}
+th,td{padding:6px 9px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{position:sticky;top:0;background:var(--sunk);font-weight:600;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+td{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+td:first-child,th:first-child{text-align:left}
+tr.short td{color:var(--bad)}
+tr.event td{background:var(--accent-soft)}
+
+/* input ledger */
+fieldset{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:14px 16px 16px;margin:0;min-width:0}
+legend{font-weight:700;font-size:15px;padding:0 6px;margin-left:-6px}
+.fhint{font-size:13px;color:var(--muted);margin:-2px 0 10px}
+.pair{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr);gap:6px 10px;align-items:center}
+.pair.one{grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}
+.pair .colh{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding-bottom:2px}
+.pair label,.single label{font-size:13.5px;color:var(--fg)}
+.pair label small,.single label small{display:block;color:var(--muted);font-size:12px;line-height:1.3}
+.single{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:6px 10px;align-items:center}
+.group-label{grid-column:1/-1;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+.group-label:first-child{margin-top:0;padding-top:0;border-top:0}
+.field{position:relative;min-width:0}
+.field input,.field select{width:100%;font:inherit;font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:13.5px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--sunk);color:var(--fg);min-width:0}
+.field.money input{padding-left:20px}
+.field.money::before{content:"$";position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;font-family:var(--f-num)}
+.field.pct input{padding-right:22px}
+.field.pct::after{content:"%";position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
+.field input[type=text]{font-family:var(--f-body)}
+.field select{font-family:var(--f-body)}
+.derived{font-size:12px;color:var(--muted);font-family:var(--f-num);font-variant-numeric:tabular-nums}
+@media (max-width:420px){.pair{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.pair>label,.pair .colh.blank{grid-column:1/-1}.pair .colh.blank{display:none}}
+
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-size:13px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn.danger{color:var(--bad)}
+.btn.danger.armed{background:var(--bad);border-color:var(--bad);color:#fff}
+.example{font-size:12.5px;background:var(--accent-soft);color:var(--fg);border-radius:8px;padding:8px 10px}
+.limits{font-size:13px;color:var(--muted)}
+.data-src{margin:0 0 10px;padding:8px 10px;border-radius:8px;background:var(--sunk);color:var(--fg);font-size:12.5px}
+.data-src .chip-ok{display:inline-block;font-weight:600;color:var(--good);margin-right:4px}
+.site-foot{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:4px;max-width:80ch}
+.site-foot p{margin:0}
+.help-btn{font:600 11px/1 var(--f-body);width:18px;height:18px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);cursor:pointer;padding:0;vertical-align:1px;margin-left:2px}
+.help-btn:hover,.help-btn[aria-expanded="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.help-pop{display:block;margin-top:5px;font-size:12.5px;line-height:1.45;color:var(--fg);background:var(--accent-soft);border-radius:7px;padding:7px 9px;font-weight:400;text-transform:none;letter-spacing:0}
+legend .help-pop{max-width:52ch}
+.field textarea{width:100%;font:inherit;font-family:var(--f-num);font-size:12px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:var(--sunk);color:var(--fg);resize:vertical;min-width:0}
+.ev-list{display:flex;flex-direction:column;gap:10px}
+.ev{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 8px;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--sunk)}
+.ev .wide{grid-column:span 2}
+.ev .full{grid-column:1/-1;display:flex;gap:8px;align-items:end}
+.ev .full .field{flex:1}
+.ev label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);min-width:0}
+.ev .field input,.ev .field select{background:var(--surface)}
+.ev .rm{font:inherit;font-size:12px;font-weight:600;color:var(--bad);background:none;border:0;cursor:pointer;padding:6px 4px}
+@media (max-width:460px){.ev{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.head-right{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.linkbtn{font:inherit;font-size:13px;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:4px}
+.quick{display:flex;justify-content:center;padding-block:8px 24px}
+.q-card{width:100%;max-width:640px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px 22px 18px;display:flex;flex-direction:column;gap:6px}
+.q-progress{height:4px;background:var(--sunk);border-radius:4px;overflow:hidden;margin-bottom:10px}
+.q-progress i{display:block;height:100%;background:var(--accent);width:20%;transition:width .25s}
+.q-title{font-family:var(--f-display);font-weight:700;font-size:clamp(22px,3vw,28px);letter-spacing:-.015em;margin:0;line-height:1.15;text-wrap:balance}
+.q-lead{color:var(--muted);margin:0 0 8px;max-width:58ch}
+.q-body{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);gap:10px 12px;align-items:center}
+.q-body .colh{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.q-body label{font-size:14.5px}
+.q-body label small{display:block;font-size:12.5px;color:var(--muted);line-height:1.3}
+.q-body .span2{grid-column:span 2}
+.q-body .field input,.q-body .field select{font-size:15px;padding:9px 10px}
+.q-body .field.money input{padding-left:22px}
+@media (max-width:480px){.q-body{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.q-body>label,.q-body .blank{grid-column:1/-1}.q-body .blank{display:none}.q-body .span2{grid-column:1/-1}}
+.q-body.one{grid-template-columns:minmax(0,1.3fr) minmax(0,1.4fr)}
+.q-err{color:var(--bad);font-size:13.5px;margin:6px 0 0}
+.q-err:empty{display:none}
+.q-nav{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
+.q-nav .btn{font-size:14px;padding:9px 16px}
+.q-skip{text-align:center;margin:8px 0 0}
+.q-note{grid-column:1/-1;font-size:13px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:8px 10px;margin:0}
+.welcome{font-size:14px;background:var(--accent-soft);border-radius:8px;padding:10px 12px}
+.ask-log{display:flex;flex-direction:column;gap:8px;max-height:460px;overflow-y:auto}
+.ask-log:empty{display:none}
+.msg{font-size:14px;line-height:1.5;padding:9px 12px;border-radius:10px;max-width:92%;min-width:0;overflow-wrap:anywhere}
+.msg p{margin:0 0 6px} .msg p:last-child{margin:0} .msg ul{margin:4px 0 6px;padding-left:18px}
+.msg.user{align-self:flex-end;background:var(--accent);color:var(--accent-ink)}
+.msg.bot{align-self:flex-start;background:var(--sunk)}
+.msg.note{align-self:center;font-size:13px;color:var(--bad);background:transparent;padding:2px}
+.thinking,.muted{color:var(--muted)}
+.tool-status{font-size:12.5px;color:var(--muted);font-family:var(--f-num);padding-left:4px}
+.proposal{border:1px solid var(--accent);border-radius:10px;padding:10px 12px;font-size:14px;background:var(--surface)}
+.proposal ul{margin:6px 0 10px;padding-left:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.chip{font:inherit;font-size:13px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--sunk);color:var(--fg);cursor:pointer;text-align:left}
+.ask-form{display:flex;gap:8px;align-items:flex-end;margin-top:10px}
+.ask-form textarea{flex:1;min-width:0;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--sunk);color:var(--fg);resize:vertical}
+.ask-form .btn{padding:9px 14px}
+.opt-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+.opt-list:empty{display:none}
+.opt-card{border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13.5px;display:flex;flex-direction:column;min-width:0}
+.opt-card.best{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.opt-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.opt-card ul{margin:8px 0;padding-left:18px;flex:1}
+.opt-card li{margin-bottom:2px}
+.opt-metrics{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12.5px;color:var(--muted)}
+.opt-metrics b{color:var(--fg);font-weight:500}
+.pill.warn{background:var(--sunk);color:var(--warn)}
+.opt-why{font-size:14px;margin-top:10px}
+.opt-why:empty{display:none}
+.opt-why p{margin:0 0 6px} .opt-why ul{margin:4px 0 6px;padding-left:18px}
+.solve-row{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center}
+.solve-row label{font-size:13px;color:var(--muted)}
+.solve-row .field{width:auto}
+.solve-row select{min-width:170px}
+.solve-row .field.pct input{width:80px}
+.solve-out{font-size:14px;margin:10px 0 0}
+.solve-out:empty{display:none}
+.stress{font-size:14px;padding:10px 12px;border-radius:8px;background:var(--sunk);margin-bottom:10px}
+.stress b{font-weight:700}
+.mc-top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;margin:4px 0 10px}
+.gauge{display:flex;flex-direction:column;min-width:150px}
+.gauge .v{font-family:var(--f-display);font-weight:700;font-size:34px;line-height:1}
+.gauge .k{font-size:13px;color:var(--muted)}
+.gauge.good .v{color:var(--good)} .gauge.warn .v{color:var(--warn)} .gauge.bad .v{color:var(--bad)}
+.mc-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px 16px;flex:1;min-width:0;font-size:13px}
+.mc-facts div{display:flex;flex-direction:column}
+.mc-facts .num{font-size:15px;color:var(--fg)}
+.mc-facts span:last-child{color:var(--muted)}
+.limits ul{margin:6px 0 0;padding-left:18px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Run The Numbers</h1>
+      <p class="sub">Retirement projection for Canadians, on your own or as a couple, in any province or territory, in today's dollars. <b>Your figures are kept in this browser only.</b></p>
+    </div>
+    <div class="head-right"><button class="btn" type="button" id="btnReport" hidden>Report (PDF)</button><button class="btn" type="button" id="btnQuick">Quick start</button><div class="scen" id="scenTabs" role="group" aria-label="Scenarios"></div></div>
+  </header>
+
+  <section class="quick" id="quick" hidden aria-labelledby="qTitle">
+    <div class="q-card">
+      <div class="q-progress" aria-hidden="true"><i id="qBar"></i></div>
+      <p class="eyebrow" id="qStep">Step 1 of 5</p>
+      <h2 class="q-title" id="qTitle">Let's start with the two of you</h2>
+      <p class="q-lead" id="qLead"></p>
+      <form id="qForm" novalidate><div class="q-body" id="qBody"></div>
+        <p class="q-err" id="qErr" role="alert"></p>
+        <div class="q-nav">
+          <button class="btn" type="button" id="qBack">Back</button>
+          <button class="btn primary" type="submit" id="qNext">Next</button>
+        </div>
+      </form>
+      <p class="q-skip"><button type="button" class="linkbtn" id="qSkip">Skip and explore the example instead</button></p>
+    </div>
+  </section>
+
+  <div class="grid" id="mainGrid">
+    <section class="results" aria-label="Results">
+      <div class="verdict" id="verdict"><span class="eyebrow">Does the money last?</span><span class="big" id="vBig">…</span><p id="vText"></p><ul class="takeaways" id="takeaways"></ul></div>
+      <p class="report-msg" id="reportMsg" role="status"></p>
+      <div class="stats">
+        <div class="stat"><span class="v" id="stRetire">–</span><span class="k" id="stRetireK">Investments when you both retire</span></div>
+        <div class="stat"><span class="v" id="stIncome">–</span><span class="k" id="stIncomeK">Lifetime income tax and OAS clawback</span></div>
+        <div class="stat"><span class="v" id="stEnd">–</span><span class="k" id="stEndK">Estate after tax at end of plan, incl. home</span></div>
+      </div>
+      <div class="panel">
+        <div class="chart-head">
+          <h2>Investments over time</h2>
+          <div class="legend">
+            <span><i style="background:var(--s-rrsp)"></i>RRSP / RRIF</span>
+            <span><i style="background:var(--s-tfsa)"></i>TFSA</span>
+            <span><i style="background:var(--s-nonreg)"></i>Non-registered</span>
+            <span><i style="background:var(--s-cash)"></i>Cash</span>
+          </div>
+        </div>
+        <div class="chart-box" id="chartBox"><canvas id="chart" aria-label="Stacked chart of investment balances by year"></canvas><div class="tip" id="tip" hidden></div></div>
+        <p class="note" id="chartNote">Dashed lines mark each retirement; the dotted line marks the first death. Home equity is not drawn.</p>
+      </div>
+      <div class="panel ask" id="askPanel" hidden>
+        <div class="chart-head"><h2>Ask about your plan</h2><button class="linkbtn" type="button" id="askClear">Clear</button></div>
+        <p class="note" style="margin:0 0 8px">Claude reads the plan you're looking at, tests changes for you, and can suggest one to apply. Your plan's numbers are sent to Claude when you ask, using your Claude account. It isn't financial advice.</p>
+        <div class="ask-log" id="askLog" aria-live="polite"></div>
+        <div class="chips" id="askChips">
+          <button type="button" class="chip">What's the biggest risk in our plan?</button>
+          <button type="button" class="chip">Should we take CPP at 65 or 70?</button>
+          <button type="button" class="chip">How can we pay less tax over our lifetime?</button>
+          <button type="button" class="chip">How much more could we safely spend?</button>
+        </div>
+        <form class="ask-form" id="askForm">
+          <textarea id="askBox" rows="2" placeholder="Ask anything about your plan…" aria-label="Your question"></textarea>
+          <button class="btn primary" type="submit" id="askSend">Ask</button>
+          <button class="btn" type="button" id="askStop" hidden>Stop</button>
+        </form>
+      </div>
+      <div class="panel" id="risk">
+        <div class="chart-head"><h2>Market risk</h2><button class="btn" id="btnMC" type="button">Run 500 market histories</button></div>
+        <div class="stress" id="stress"></div>
+        <div id="mcOut" hidden>
+          <div class="mc-top"><div class="gauge" id="mcGauge"><span class="v" id="mcPct">–</span><span class="k">of market histories, the money lasts</span></div>
+            <div class="mc-facts" id="mcFacts"></div></div>
+          <div class="chart-box" style="height:220px"><canvas id="mcChart" aria-label="Range of investment balances across market histories"></canvas></div>
+          <p class="note">Shaded band: the middle 80% of outcomes. Line: the median. Today's dollars.</p>
+        </div>
+        <p class="note" id="mcNote">Replays your plan with returns that swing up and down around your average, using your volatility setting.</p>
+      </div>
+      <div class="panel" id="optimizer">
+        <h2 style="margin-bottom:6px">Find my best plan</h2>
+        <p class="note" style="margin:0 0 10px">Tests 72 combinations of CPP and OAS timing, RRSP drawdown and withdrawal order, checks the finalists against market histories, and shows the best three for your goal. Takes about 20 to 40 seconds.</p>
+        <div class="solve-row">
+          <label for="optGoal">Goal</label>
+          <div class="field"><select id="optGoal"><option value="spend">Spend the most</option><option value="retire">Retire earliest</option><option value="estate">Leave the most</option><option value="tax">Pay the least tax</option></select></div>
+          <label for="optTarget">Lasts in at least</label>
+          <div class="field pct"><input type="number" id="optTarget" value="85" min="50" max="99" step="1" inputmode="decimal"></div>
+          <button class="btn primary" id="btnOpt" type="button">Find best plans</button>
+        </div>
+        <p class="solve-out" id="optStatus" role="status"></p>
+        <div class="opt-list" id="optOut"></div>
+        <div class="actions" style="margin-top:10px"><button class="btn" id="optExplain" type="button" hidden>Explain these plans</button></div>
+        <div class="opt-why" id="optWhy" aria-live="polite"></div>
+      </div>
+      <div class="panel" id="solver">
+        <h2 style="margin-bottom:6px">What would it take?</h2>
+        <p class="note" style="margin:0 0 10px">Finds the change that gets your plan to a target success rate across market histories.</p>
+        <div class="solve-row">
+          <label for="solveLever">Change</label>
+          <div class="field"><select id="solveLever"><option value="spend">Spending</option><option value="retire">Retirement age</option><option value="gov">CPP and OAS start</option></select></div>
+          <label for="solveTarget">Target</label>
+          <div class="field pct"><input type="number" id="solveTarget" value="85" min="50" max="99" step="1" inputmode="decimal"></div>
+          <button class="btn" id="btnSolve" type="button">Find it</button>
+        </div>
+        <p class="solve-out" id="solveOut" role="status"></p>
+      </div>
+      <div class="panel" id="finder">
+        <div class="chart-head"><h2>RRSP drawdown finder</h2><button class="btn" id="btnFind" type="button">Compare targets</button></div>
+        <p class="note" style="margin:0" id="finderNote">Tests drawing each spouse's RRSP up to different income levels after retiring, then shows which gives the largest estate after tax.</p>
+        <div class="tbl-wrap" id="finderWrap" hidden style="max-height:none;margin-top:10px"><table id="finderTbl" style="min-width:520px"></table></div>
+      </div>
+      <div class="panel" id="comparePanel" hidden>
+        <h2 style="margin-bottom:8px">Scenarios side by side</h2>
+        <div class="compare" id="compare"></div>
+      </div>
+      <div class="panel">
+        <details class="yby"><summary>Year by year</summary>
+          <div class="tbl-wrap"><table id="tbl"></table></div>
+        </details>
+      </div>
+    </section>
+
+    <section class="inputs" aria-label="Your numbers">
+      <div class="welcome" id="welcomeNote" hidden>Your plan is ready, with results alongside. Everything the quick start assumed, like CPP and OAS at 65 and a 5.5% return, is in the fields below. Change anything and the results update.</div>
+      <div class="example" id="exampleNote">These are <b>example figures</b>, not yours. Replace them and the projection updates as you type.</div>
+      <fieldset><legend>Scenario</legend>
+        <div class="single">
+          <label for="scenName">Scenario name</label><div class="field"><input type="text" id="scenName"></div>
+        </div>
+        <div class="actions" style="margin-top:12px">
+          <button class="btn" id="btnCopy" type="button">Copy as new scenario</button>
+          <button class="btn" id="btnReset" type="button">Reset to example</button>
+          <button class="btn danger" id="btnDelete" type="button">Delete scenario</button>
+        </div>
+      </fieldset>
+      <fieldset><legend>Backup</legend>
+        <p class="fhint">Your scenarios are saved only in this browser. Copy a backup to keep them safe or move them to another device.</p>
+        <div class="actions"><button class="btn" id="btnBackup" type="button">Copy backup</button></div>
+        <div class="field" style="margin-top:10px"><textarea id="backupText" rows="3" placeholder="Paste a backup here to restore it" aria-label="Backup text"></textarea></div>
+        <div class="actions" style="margin-top:8px"><button class="btn" id="btnRestore" type="button">Restore from backup</button></div>
+        <p class="fhint" id="backupMsg" style="margin:8px 0 0" role="status"></p>
+      </fieldset>
+      <fieldset id="fsPeople"><legend>The two of you</legend>
+        <div class="single" style="margin-bottom:10px"><label for="hhMode">Planning for <button type="button" class="help-btn" data-help="mode" aria-label="What is planning for?" aria-expanded="false">?</button></label><div class="field"><select id="hhMode"><option value="couple">Me and a partner</option><option value="single">Just me</option></select></div></div>
+        <div class="pair" id="peopleGrid"></div></fieldset>
+      <fieldset><legend>Household</legend><div class="single" id="houseGrid"></div></fieldset>
+      <fieldset><legend>Big expenses and windfalls <button type="button" class="help-btn" data-help="events" aria-label="What are big expenses and windfalls?" aria-expanded="false">?</button></legend>
+        <p class="fhint" id="evHint">One-time or repeating costs and money coming in, timed by Spouse 1's age.</p>
+        <div id="evList" class="ev-list"></div>
+        <div class="actions" style="margin-top:10px"><button class="btn" id="btnAddEv" type="button">Add an event</button></div>
+      </fieldset>
+      <fieldset><legend>Assumptions</legend>
+        <p class="fhint">Returns are before inflation. Everything is shown in today's dollars.</p>
+        <div class="single" id="assumeGrid"></div>
+      </fieldset>
+      <div class="panel limits">
+        <p class="data-src" id="dataSrc"></p>
+        <b style="color:var(--fg)">How tax is handled</b>
+        <ul>
+          <li>Federal and provincial tax use 2026 brackets and credits for all 13 provinces and territories: basic personal, age, pension income and CPP/EI, plus Ontario's surtax and Health Premium, BC's tax reduction, Manitoba's basic amount phase-out, and Quebec's abatement and family-income credits. Brackets are assumed to rise with inflation.</li>
+          <li>Checked in October 2026: brackets and credits for every province against CRA, provincial and TaxTips figures, and combined marginal rates against a published BC tax card.</li>
+          <li>OAS clawback starts at $95,323 of net income. Pension splitting picks the split that saves the most each year.</li>
+          <li>RRSP withdrawals from 65 are treated as RRIF income, so they qualify for the pension credit and splitting.</li>
+          <li>Extra RRSP money not needed for spending goes into TFSA room first, then non-registered. Estate tax assumes the remaining RRIF is taxed in one final return.</li>
+          <li>When a spouse dies, RRSP/RRIF, TFSA and non-registered money roll to the survivor tax-free. OAS stops, pension splitting ends, and the survivor gets the CPP survivor's pension (capped with their own CPP) plus the $2,500 death benefit.</li>
+          <li>Taxable income events are taxed as regular income without CPP/EI. Care costs don't claim the medical expense credit yet.</li>
+          <li>Not yet modelled: tax on non-registered growth; low-income tax reductions outside BC (like Ontario's); Quebec's Health Services Fund contribution and QPP/QPIP payroll rates (CPP/EI rates are used); and indexation pauses in some provinces.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+  <footer class="site-foot">
+    <p><b>Educational demo.</b> Not financial, tax or legal advice. Check your own figures with a qualified, fee-only planner.</p>
+    <p>Built with Claude. Tax and benefit figures are kept in Airtable, checked against CRA and provincial sources, and synced into this page.</p>
+  </footer>
+</div>
+
+<script id="taxData">
+// Generated from Airtable by airtable-sync/sync.py. Do not edit by hand.
+window.TAX_DATA={"source":"Airtable base app2siuG6WVXJu2G6","synced":"2026-10-24","fed":{"br":[[58523,0.14],[117045,0.205],[181440,0.26],[258482,0.29],[Infinity,0.33]],"rate":0.14,"bpaMax":16452,"bpaMin":14829,"bpaLo":181440,"bpaHi":258482,"age":9208,"ageThr":46432,"pen":2000},"prov":{"BC":{"name":"British Columbia","br":[[50363,0.056],[100728,0.077],[115648,0.105],[140430,0.1229],[190405,0.147],[265545,0.168],[Infinity,0.205]],"rate":0.056,"bpa":13216,"age":5927,"ageThr":44119,"pen":1000,"bcRed":{"max":690,"thr":25570,"rate":0.0356}},"AB":{"name":"Alberta","br":[[61200,0.08],[154259,0.1],[185111,0.12],[246813,0.13],[370220,0.14],[Infinity,0.15]],"rate":0.08,"bpa":22769,"age":6345,"ageThr":47234,"pen":1753},"SK":{"name":"Saskatchewan","br":[[54532,0.105],[155805,0.125],[Infinity,0.145]],"rate":0.105,"bpa":20381,"age":5901,"ageThr":43927,"pen":1000,"seniorSupp":2569},"MB":{"name":"Manitoba","br":[[47000,0.108],[100000,0.1275],[Infinity,0.174]],"rate":0.108,"bpa":15780,"age":3728,"ageThr":27749,"pen":1000,"bpaPhase":[200000,400000,0]},"ON":{"name":"Ontario","br":[[53891,0.0505],[107785,0.0915],[150000,0.1116],[220000,0.1216],[Infinity,0.1316]],"rate":0.0505,"bpa":12989,"age":6342,"ageThr":47210,"pen":1796,"onSurtax":[[5818,0.2],[7446,0.36]],"onHealth":true},"QC":{"name":"Quebec","br":[[54345,0.14],[108680,0.19],[132245,0.24],[Infinity,0.2575]],"rate":0.14,"bpa":18952,"qc":{"age":3986,"ret":3541,"alone":2172,"thr":42955,"red":0.1875,"abate":0.165}},"NB":{"name":"New Brunswick","br":[[52333,0.094],[104666,0.14],[193861,0.16],[Infinity,0.195]],"rate":0.094,"bpa":13664,"age":6158,"ageThr":45844,"pen":1000},"NS":{"name":"Nova Scotia","br":[[30995,0.0879],[61991,0.1495],[97417,0.1667],[157124,0.175],[Infinity,0.21]],"rate":0.0879,"bpa":11932,"age":5826,"ageThr":30828,"pen":1173},"PE":{"name":"Prince Edward Island","br":[[33928,0.095],[65820,0.1347],[106890,0.166],[142520,0.1762],[200000,0.19],[Infinity,0.2]],"rate":0.095,"bpa":15000,"age":6510,"ageThr":36600,"pen":1000},"NL":{"name":"Newfoundland and Labrador","br":[[44678,0.087],[89354,0.145],[159528,0.158],[223340,0.178],[285319,0.198],[570638,0.208],[1141275,0.213],[Infinity,0.218]],"rate":0.087,"bpa":11188,"age":7142,"ageThr":39138,"pen":1000},"YT":{"name":"Yukon","br":[[58523,0.064],[117045,0.09],[181440,0.109],[500000,0.128],[Infinity,0.15]],"rate":0.064,"bpaFed":true,"age":9208,"ageThr":46432,"pen":2000},"NT":{"name":"Northwest Territories","br":[[53003,0.059],[106009,0.086],[172346,0.122],[Infinity,0.1405]],"rate":0.059,"bpa":18198,"age":8902,"ageThr":46432,"pen":1000},"NU":{"name":"Nunavut","br":[[55801,0.04],[111602,0.07],[181439,0.09],[Infinity,0.115]],"rate":0.04,"bpa":19659,"age":12550,"ageThr":46432,"pen":2000}},"cea":1501,"benefits":{"yampe":85000,"oasThreshold":95323,"ympe":74600,"survCombined":1531.56,"cppRate":0.0595,"deathBenefit":2500,"tfsaLimit":7000,"survUnder65":803.54,"eiMax":68900,"survFlat":238.17,"cpp2Rate":0.04,"eiRate":0.0163,"survOver65":904.59,"oasMaxMonthly":762.5,"cppExemption":3500,"cppMax65":1507.65},"rrif":{"71":0.0528,"72":0.054,"73":0.0553,"74":0.0567,"75":0.0582,"76":0.0598,"77":0.0617,"78":0.0636,"79":0.0658,"80":0.0682,"81":0.0708,"82":0.0738,"83":0.0771,"84":0.0808,"85":0.0851,"86":0.0899,"87":0.0955,"88":0.1021,"89":0.1099,"90":0.1192,"91":0.1306,"92":0.1449,"93":0.1634,"94":0.1879,"95":0.2},"verified":"2026-10-23","needsReview":["tfsaLimit","RRIF minimums"]};
+</script>
+<script>
+(function(){
+// Projection starts today: the first year covers only what's left of this calendar year
+const TODAY=new Date();
+const FIRST_FRAC=(()=>{const end=new Date(TODAY.getFullYear(),11,31,23,59); return (end-TODAY)/(365.25*864e5);})();
+const START_YEAR = FIRST_FRAC<1/12 ? TODAY.getFullYear()+1 : TODAY.getFullYear();
+const F0 = FIRST_FRAC<1/12 ? 1 : Math.min(1,FIRST_FRAC);
+// Government figures (canada.ca, Oct–Dec 2026)
+// Tax and benefit figures come from the Airtable base, synced into window.TAX_DATA above
+const TD=window.TAX_DATA, B=TD.benefits;
+const OAS_MAX_MONTHLY = B.oasMaxMonthly;   // ages 65–74; 75+ is 10% higher
+const CPP_MAX_65 = B.cppMax65;
+// CPP survivor's pension maximums (2026)
+const SURV={under65:B.survUnder65,flat:B.survFlat,over65:B.survOver65,combined:B.survCombined,death:B.deathBenefit};
+function survCppAnnual(own,dec,age){
+  const D=n(dec.cpp65)*12;
+  let s=age>=65?Math.min(.6*D,SURV.over65*12):Math.min(SURV.under65*12,.375*D+SURV.flat*12);
+  if(own>0) s=Math.min(s,Math.max(0,SURV.combined*12-own));
+  return s;
+}
+
+// 2026 tax parameters (CRA, Revenu Québec, provincial budgets). Held constant in today's dollars.
+const CEA=TD.cea; // Canada employment amount
+const FED=TD.fed;
+const PROV=TD.prov;
+let PV=PROV.BC;
+// Ontario Health Premium (not indexed)
+function onHealth(x){
+  const steps=[[20000,0,.06,300],[36000,300,.06,450],[48000,450,.25,600],[72000,600,.25,750],[200000,750,.25,900]];
+  let p=0; for(const [lo,b,r,cap] of steps){ if(x>lo) p=Math.min(cap,b+(x-lo)*r); } return p;
+}
+const OAS_THR=B.oasThreshold, TFSA_ROOM=B.tfsaLimit;
+const PAY={cppRate:B.cppRate,cppEx:B.cppExemption,ympe:B.ympe,cpp2Rate:B.cpp2Rate,yampe:B.yampe,eiRate:B.eiRate,eiMax:B.eiMax};
+
+const EXAMPLE = {
+  people:[
+    {name:"Spouse 1",birthYear:1968,retireAge:62,lifeAge:87,salary:118000,rrsp:420000,tfsa:95000,nonreg:60000,rrspContrib:15000,tfsaContrib:7000,tfsaRoom:20000,pension:0,pensionStart:65,survPct:60,cpp65:1150,cppStart:65,oasYears:40,oasStart:65},
+    {name:"Spouse 2",birthYear:1970,retireAge:60,lifeAge:94,salary:82000,rrsp:210000,tfsa:88000,nonreg:0,rrspContrib:8000,tfsaContrib:7000,tfsaRoom:15000,pension:18000,pensionStart:60,survPct:60,cpp65:900,cppStart:65,oasYears:40,oasStart:65}
+  ],
+  house:{province:"BC",cash:30000,spending:90000,spendingLater:75000,spendingChangeAge:78,survivorSpend:70,homeValue:1400000,mortgage:180000,mortgageRate:4.5,mortgagePayment:24000,downsizeAge:0,downsizeAmount:0,ltcCost:0,ltcAge:85,
+    events:[{label:"Replace the car",kind:"expense",amount:40000,age:63,every:10,until:83,who:"0"},{label:"New roof",kind:"expense",amount:25000,age:70,every:0,until:0,who:"0"}]},
+  assume:{returnRate:5.5,cashRate:2.5,inflation:2.5,volatility:10,flexCut:0,split:"yes",cppShare:"no",cppShareYears:100,order:"cash,nonreg,rrsp,tfsa",meltTarget:0,meltEnd:71}
+};
+
+const PEOPLE_FIELDS = [
+  ["g","Basics"],
+  ["name","Name","text"],
+  ["birthYear","Birth year","int"],
+  ["retireAge","Retirement age","int"],
+  ["lifeAge","Plan to age","int","life expectancy. Try different ages for each"],
+  ["salary","Salary","$","per year before tax, until retiring"],
+  ["g","Savings today"],
+  ["rrsp","RRSP / RRIF","$"],
+  ["tfsa","TFSA","$"],
+  ["nonreg","Non-registered","$"],
+  ["rrspContrib","RRSP contributions","$","per year, until retiring"],
+  ["tfsaContrib","TFSA contributions","$","per year, until retiring"],
+  ["tfsaRoom","Unused TFSA room","$","today, from CRA My Account"],
+  ["g","Pensions"],
+  ["pension","Workplace pension","$","per year before tax, indexed"],
+  ["pensionStart","Pension starts at age","int"],
+  ["survPct","Pension to survivor","%","share of the pension that continues after death"],
+  ["cpp65","CPP / QPP at 65, monthly","$","from My Service Canada. 2026 max is $"+CPP_MAX_65.toLocaleString("en-CA")],
+  ["cppStart","Start CPP at age","int","60 to 70"],
+  ["oasYears","Years in Canada after 18","int","40 years gets full OAS"],
+  ["oasStart","Start OAS at age","int","65 to 70"]
+];
+const HOUSE_FIELDS = [
+  ["province","Province or territory","prov","where you'll live in retirement"],
+  ["g","Spending"],
+  ["spending","Household spending","$","per year, not counting mortgage"],
+  ["spendingLater","Spending later in retirement","$","per year"],
+  ["spendingChangeAge","Switch at age","int","@0"],
+  ["survivorSpend","Spending for one","%","of the couple's spending, after a spouse dies"],
+  ["cash","Cash and savings accounts","$"],
+  ["g","Home and debt"],
+  ["homeValue","Home value","$"],
+  ["mortgage","Mortgage / HELOC balance","$"],
+  ["mortgageRate","Interest rate","%"],
+  ["mortgagePayment","Payments","$","per year"],
+  ["downsizeAge","Downsize at age","int","@0 — 0 means never"],
+  ["downsizeAmount","Equity released","$","today's dollars, after costs"],
+  ["g","Long-term care"],
+  ["ltcCost","Care cost per person","$","per year, on top of regular spending. 0 turns it off"],
+  ["ltcAge","Care starts at age","int","each spouse's own age"]
+];
+const ASSUME_FIELDS = [
+  ["returnRate","Investment return","%","average per year"],
+  ["flexCut","Cut spending after a down year","%","in retirement, the year after markets fall. 0 turns it off"],
+  ["volatility","Return volatility","%","how much returns swing year to year. About 10% for a balanced portfolio, 15% for all stocks"],
+  ["cashRate","Cash return","%"],
+  ["inflation","Inflation","%"],
+  ["split","Split pension income","yesno","moves up to half of eligible pension income to the lower-income spouse"],
+  ["cppShare","Share CPP between spouses","yesno","evens out your CPP pensions once you both collect"],
+  ["cppShareYears","Careers spent together","%","share of your working years you were together"],
+  ["order","Withdraw in this order","select"],
+  ["g","RRSP drawdown"],
+  ["meltTarget","Draw RRSP up to this income","$","taxable income per person, each year after retiring. 0 turns it off"],
+  ["meltEnd","Through age","int","RRIF minimums take over from 72"]
+];
+const ORDERS = [
+  ["cash,nonreg,rrsp,tfsa","Cash → Non-reg → RRSP → TFSA"],
+  ["cash,rrsp,nonreg,tfsa","Cash → RRSP → Non-reg → TFSA"],
+  ["cash,nonreg,tfsa,rrsp","Cash → Non-reg → TFSA → RRSP"]
+];
+
+// RRIF minimum withdrawal factors, age at start of year (72+)
+const RRIF = Object.fromEntries(Object.entries(TD.rrif).map(([a,f])=>[+a,f]));
+// a = age reached this year; the factor uses age at January 1 (a-1). First minimum is in the year you turn 72.
+const rrifFactor = a => a<72 ? 0 : (RRIF[Math.min(a-1,95)] ?? RRIF[95]);
+
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const n = v => (isFinite(+v) ? +v : 0);
+const clone = o => JSON.parse(JSON.stringify(o));
+// People in the plan: just the first for a single person
+const isSingle=d=>d.house.mode==="single";
+const ppl=d=>isSingle(d)?d.people.slice(0,1):d.people;
+const COUPLE_ONLY=new Set(["survivorSpend","split","cppShare","cppShareYears","survPct"]);
+const bothPhrase=d=>isSingle(d)?"you retire":"you both retire";
+
+function cppAnnual(p){
+  const s = clamp(n(p.cppStart),60,70), m=(s-65)*12;
+  const adj = m<0 ? 1+0.006*m : 1+0.007*m;
+  return n(p.cpp65)*12*adj;
+}
+function oasAnnual(p, age){
+  const yrs=n(p.oasYears); if(yrs<10) return 0;
+  const s=clamp(n(p.oasStart),65,70);
+  return OAS_MAX_MONTHLY*12*Math.min(yrs,40)/40*(1+0.006*Math.min(60,(s-65)*12))*(age>=75?1.1:1);
+}
+
+function bracketTax(x,br){let t=0,prev=0;for(const [top,r] of br){if(x>prev)t+=(Math.min(x,top)-prev)*r;if(x<=top)break;prev=top;}return t;}
+function payroll(s){
+  if(s<=0) return {cppBase:0,cppEnh:0,ei:0,total:0};
+  const cpp=Math.max(0,Math.min(s,PAY.ympe)-PAY.cppEx)*PAY.cppRate, cpp2=Math.max(0,Math.min(s,PAY.yampe)-PAY.ympe)*PAY.cpp2Rate, ei=Math.min(s,PAY.eiMax)*PAY.eiRate;
+  return {cppBase:cpp*4.95/5.95,cppEnh:cpp/5.95+cpp2,ei,total:cpp+cpp2+ei};
+}
+// One person's federal + provincial tax and OAS recovery for a year (province in PV)
+function personTax(o){
+  const income=o.salary+(o.other||0)+o.pension+o.cpp+o.oas+o.rrspW-o.splitOut+o.splitIn;
+  const net0=Math.max(0,income-o.rrspDed-o.pay.cppEnh);
+  const claw=o.oas>0?Math.min(o.oas,Math.max(0,.15*(net0-OAS_THR))):0;
+  const net=net0-claw, elig=Math.max(0,o.elig-o.splitOut+o.splitIn);
+  const bpa=FED.bpaMax-clamp((net-FED.bpaLo)/(FED.bpaHi-FED.bpaLo),0,1)*(FED.bpaMax-FED.bpaMin);
+  const fAge=o.age>=65?Math.max(0,FED.age-.15*Math.max(0,net-FED.ageThr)):0;
+  let fed=Math.max(0,bracketTax(net,FED.br)-FED.rate*(bpa+fAge+Math.min(FED.pen,elig)+o.pay.cppBase+o.pay.ei+Math.min(CEA,o.salary||0)));
+  const V=PV; let pt;
+  if(V.qc){
+    fed*=1-V.qc.abate;
+    const fam=o.familyNet!=null?o.familyNet:net;
+    const extra=Math.max(0,(o.age>=65?V.qc.age:0)+Math.min(V.qc.ret,elig)+(o.single?V.qc.alone:0)-V.qc.red*Math.max(0,fam-V.qc.thr));
+    pt=Math.max(0,bracketTax(net,V.br)-V.rate*(V.bpa+extra+o.pay.cppBase+o.pay.ei));
+  } else {
+    let pbpa=V.bpaFed?bpa:V.bpa;
+    if(V.bpaPhase){const [lo,hi,mn]=V.bpaPhase; pbpa=V.bpa-clamp((net-lo)/(hi-lo),0,1)*(V.bpa-mn);}
+    const pAge=o.age>=65?Math.max(0,V.age-.15*Math.max(0,net-V.ageThr))+(V.seniorSupp||0):0;
+    pt=Math.max(0,bracketTax(net,V.br)-V.rate*(pbpa+pAge+Math.min(V.pen,elig)+o.pay.cppBase+o.pay.ei));
+    if(V.onSurtax){let sur=0; for(const [thr,r] of V.onSurtax) sur+=Math.max(0,pt-thr)*r; pt+=sur;}
+    if(V.bcRed) pt=Math.max(0,pt-Math.max(0,V.bcRed.max-V.bcRed.rate*Math.max(0,net-V.bcRed.thr)));
+    if(V.onHealth) pt+=onHealth(net);
+  }
+  return {tax:fed+pt,claw,income,net};
+}
+// Household tax, choosing the best pension split when allowed
+function houseTax(base,rrspW,splitOn){
+  const elig=base.map((b,i)=>b.pension+(b.age>=65?rrspW[i]:0));
+  const single=base.filter(b=>b.alive!==false).length<2;
+  const run=(from,amt)=>{
+    const os=base.map((b,i)=>({...b,single,rrspW:rrspW[i],elig:elig[i],splitOut:i===from?amt:0,splitIn:(from>=0&&i!==from)?amt:0}));
+    if(PV.qc){const fam=os.reduce((s,o)=>s+personTax(o).net,0); os.forEach(o=>o.familyNet=fam);}
+    return os.map(personTax);
+  };
+  const cost=r=>r.reduce((s,x)=>s+x.tax+x.claw,0);
+  let best=run(-1,0), bestCost=cost(best), split=0, from=-1;
+  if(splitOn && base.length===2){
+    for(const f of [0,1]) for(let k=1;k<=10;k++){ if(PV.qc&&base[f].age<65) break;const amt=elig[f]*k/20; if(amt<=0)break; const r=run(f,amt),c=cost(r); if(c<bestCost-0.5){best=r;bestCost=c;split=amt;from=f;}}
+  }
+  return {per:best,total:bestCost,split,from};
+}
+
+function simulate(d,rets){
+  const P=ppl(d), H=d.house, A=d.assume, splitOn=A.split!=="no";
+  PV=PROV[H.province]||PROV.BC;
+  const inf=n(A.inflation)/100;
+  const r=(1+n(A.returnRate)/100)/(1+inf)-1, rc=(1+n(A.cashRate)/100)/(1+inf)-1;
+  const order=A.order.split(",");
+  const acc=P.map(p=>({rrsp:n(p.rrsp),tfsa:n(p.tfsa),nonreg:n(p.nonreg)}));
+  let cash=n(H.cash), home=n(H.homeValue), mort=n(H.mortgage);
+  const room=P.map(p=>n(p.tfsaRoom)), target=n(A.meltTarget), mEnd=n(A.meltEnd)||71;
+  const lastYear=Math.max(...P.map(p=>n(p.birthYear)+(n(p.lifeAge)||95)));
+  const alive=P.map(()=>true), survPen=P.map(()=>0), deceased=P.map(()=>-1);
+  const rows=[]; let firstShort=null, prevRet=null; const flex=clamp(n(A.flexCut),0,50)/100;
+  for(let y=START_YEAR,k=0;y<=lastYear&&k<80;y++,k++){
+    const part=(k===0&&F0<1)?F0:1;  // share of this year still ahead
+    if(part===1) room.forEach((_,i)=>room[i]+=TFSA_ROOM);  // this year's room is already in "unused room"
+    const roomBack=P.map(()=>0);
+    const ages=P.map(p=>y-n(p.birthYear)), deflate=Math.pow(1+inf,k+1);
+    const row={year:y,ages,events:[],alive:alive.slice()}, couple=alive.every(Boolean);
+    if(n(H.downsizeAge)>0&&ages[0]===n(H.downsizeAge)&&n(H.downsizeAmount)>0){
+      const rel=Math.min(n(H.downsizeAmount),home); home-=rel;
+      const net=Math.max(0,rel-mort/Math.pow(1+inf,k)); mort=0;
+      acc.forEach(a=>a.nonreg+=net/acc.length); row.events.push("Downsize");
+    }
+    // one-time / recurring events, timed by spouse 1's age
+    let evExp=0, evFree=0; const evInc=P.map(()=>0);
+    (H.events||[]).forEach(e=>{
+      const ag=ages[0], at=n(e.age), ev=n(e.every), un=n(e.until), amt=n(e.amount);
+      const on=amt>0&&ag>=at&&(ev>0?((ag-at)%ev===0&&(!un||ag<=un)):ag===at); if(!on) return;
+      if(e.kind==="expense") evExp+=amt; else if(e.kind==="free") evFree+=amt;
+      else { const w=+e.who||0, i=alive[w]?w:alive.findIndex(Boolean); if(i>=0) evInc[i]+=amt; }
+    });
+    if(evFree>0){ const live=P.map((_,i)=>i).filter(i=>alive[i]); let x=evFree;
+      live.forEach(i=>{const t=Math.min(x,Math.max(0,room[i])); acc[i].tfsa+=t; room[i]-=t; x-=t;});
+      live.forEach(i=>acc[i].nonreg+=x/live.length); }
+    const ltc=P.reduce((s,p,i)=>s+((alive[i]&&n(H.ltcCost)>0&&ages[i]>=n(H.ltcAge))?n(H.ltcCost):0),0);
+    // snapshot so a partial first year can keep only its share of the year's flows
+    const snap=part<1?{acc:acc.map(a=>({...a})),cash,mort,room:room.slice()}:null;
+    let contrib=0;
+    const base=P.map((p,i)=>{
+      const a=ages[i];
+      if(!alive[i]) return {age:a,alive:false,working:false,salary:0,pay:payroll(0),rrspDed:0,pension:0,cpp:0,oas:0,survCpp:0};
+      const working=a<n(p.retireAge), salary=working?n(p.salary):0;
+      if(working) contrib+=n(p.rrspContrib)+n(p.tfsaContrib);
+      if(a===n(p.retireAge)) row.events.push(p.name+" retires");
+      return {age:a,working,salary,other:evInc[i],pay:payroll(salary),rrspDed:working?n(p.rrspContrib):0,
+        pension:((n(p.pension)>0&&a>=n(p.pensionStart))?n(p.pension):0)+survPen[i],
+        cpp:a>=clamp(n(p.cppStart),60,70)?cppAnnual(p):0,
+        oas:a>=clamp(n(p.oasStart),65,70)?oasAnnual(p,a):0};
+    });
+    // CPP pension sharing: while both are alive and collecting, the part earned together is split evenly
+    let cppShared=0;
+    if(A.cppShare==="yes"&&couple&&base.length===2&&base[0].cpp>0&&base[1].cpp>0){
+      const f=clamp(n(A.cppShareYears),0,100)/100, avg=(base[0].cpp+base[1].cpp)/2;
+      const c0=base[0].cpp*(1-f)+avg*f, c1=base[1].cpp*(1-f)+avg*f; cppShared=Math.abs(c0-base[0].cpp); base[0].cpp=c0; base[1].cpp=c1;
+    }
+    base.forEach((b,i)=>{ if(alive[i]&&deceased[i]>=0){ b.survCpp=survCppAnnual(cppAnnual(P[i])*(b.cpp>0?1:0),P[deceased[i]],b.age); b.cpp+=b.survCpp; } });
+    const rmin=acc.map((a,i)=>{const m=a.rrsp*rrifFactor(ages[i]); a.rrsp-=m; return m;});
+    const rrifMin=rmin.reduce((s,x)=>s+x,0);
+    // planned RRSP drawdown up to a taxable-income target, after retiring and through mEnd
+    const melt=acc.map((a,i)=>{ if(!alive[i]||target<=0||base[i].working||ages[i]>mEnd||a.rrsp<=0) return 0;
+      const inc=base[i].pension+base[i].cpp+base[i].oas+rmin[i]; const x=Math.min(a.rrsp,Math.max(0,target-inc)); a.rrsp-=x; return x;});
+    const meltTot=melt.reduce((s,x)=>s+x,0);
+    const mins=rmin.map((m,i)=>m+melt[i]), forced=rrifMin+meltTot;
+    let mortPay=0;
+    if(mort>0){const nom=mort*(1+n(H.mortgageRate)/100),pay=Math.min(n(H.mortgagePayment),nom); mort=nom-pay; mortPay=pay/deflate;}
+    const spend=((n(H.spendingChangeAge)>0&&ages[0]>=n(H.spendingChangeAge))?n(H.spendingLater):n(H.spending))*(couple?1:n(H.survivorSpend||100)/100)*((flex>0&&prevRet!==null&&prevRet<0&&base.every(b=>!b.working))?1-flex:1);
+    const payTot=base.reduce((s,b)=>s+b.pay.total,0);
+    const gross=base.reduce((s,b)=>s+b.salary+(b.other||0)+b.pension+b.cpp+b.oas,0);
+    const rr0=acc.reduce((s,a)=>s+a.rrsp,0), share=acc.map(a=>rr0>0?a.rrsp/rr0:0);
+    const evalG=G=>{const w=mins.map((m,i)=>m+G*share[i]); const T=houseTax(base,w,splitOn&&couple); return {cashIn:gross+forced+G-T.total-payTot,T};};
+    const outflow=spend+mortPay+contrib+evExp+ltc;
+    let cur=evalG(0), gap=outflow-cur.cashIn, G=0;
+    const wd={cash:0,nonreg:0,rrsp:0,tfsa:0}; let saved=0, short=0, tfsaIn=0;
+    if(gap<0){
+      let s=Math.min(-gap,forced);
+      acc.forEach((a,i)=>{ if(s<=0)return; const x=Math.min(s,Math.max(0,room[i])); a.tfsa+=x; room[i]-=x; s-=x; saved+=x; tfsaIn+=x; });
+      if(s>0&&forced>0){acc.forEach((a,i)=>a.nonreg+=s*mins[i]/forced); saved+=s;}
+    } else {
+      for(const kind of order){
+        if(gap<=0.5) break;
+        if(kind==="cash"){const x=Math.min(gap,cash); cash-=x; wd.cash+=x; gap-=x; continue;}
+        if(kind==="rrsp"){
+          if(rr0<=0) continue;
+          const c0=cur.cashIn, top=evalG(rr0);
+          if(top.cashIn-c0<=gap){G=rr0; cur=top;}
+          else{let lo=0,hi=rr0; for(let it=0;it<22;it++){const mid=(lo+hi)/2; (evalG(mid).cashIn-c0<gap)?lo=mid:hi=mid;} G=hi; cur=evalG(G);}
+          acc.forEach((a,i)=>a.rrsp-=G*share[i]); wd.rrsp=G; gap-=cur.cashIn-c0; continue;
+        }
+        const bal=acc.reduce((s,a)=>s+a[kind],0); if(bal<=0) continue;
+        const x=Math.min(gap,bal); acc.forEach((a,i)=>{const xi=x*a[kind]/bal; a[kind]-=xi; if(kind==="tfsa") roomBack[i]+=xi;}); wd[kind]+=x; gap-=x;
+      }
+      if(gap>0.5){short=gap; if(firstShort===null) firstShort=rows.length;}
+    }
+    P.forEach((p,i)=>{ if(base[i].working){acc[i].rrsp+=n(p.rrspContrib); acc[i].tfsa+=n(p.tfsaContrib); room[i]=Math.max(0,room[i]-n(p.tfsaContrib));} room[i]+=roomBack[i]; });
+    if(snap){
+      acc.forEach((a,i)=>["rrsp","tfsa","nonreg"].forEach(key=>a[key]=snap.acc[i][key]+part*(a[key]-snap.acc[i][key])));
+      cash=snap.cash+part*(cash-snap.cash); mort=snap.mort+part*(mort-snap.mort);
+      room.forEach((_,i)=>room[i]=snap.room[i]+part*(room[i]-snap.room[i]));
+    }
+    const rk=rets?rets[k]:r; prevRet=rk;
+    const gk=Math.pow(1+rk,part)-1, gc=Math.pow(1+rc,part)-1;
+    acc.forEach(a=>{a.rrsp=Math.max(0,a.rrsp)*(1+gk);a.tfsa=Math.max(0,a.tfsa)*(1+gk);a.nonreg=Math.max(0,a.nonreg)*(1+gk);}); cash*=1+gc;
+    const T=cur.T, bal={rrsp:acc.reduce((s,a)=>s+a.rrsp,0),tfsa:acc.reduce((s,a)=>s+a.tfsa,0),nonreg:acc.reduce((s,a)=>s+a.nonreg,0),cash};
+    const tax=T.per.reduce((s,x)=>s+x.tax,0), claw=T.per.reduce((s,x)=>s+x.claw,0), totInc=gross+forced+G;
+    Object.assign(row,{work:base.reduce((s,b)=>s+b.salary,0),cpp:base.reduce((s,b)=>s+b.cpp,0),oas:base.reduce((s,b)=>s+b.oas,0),pen:base.reduce((s,b)=>s+b.pension,0),
+      rrifMin,melt:meltTot,tfsaIn,cppShared,tax,claw,payroll:payTot,split:T.split,splitFrom:T.from,taxPer:T.per.map(x=>x.tax+x.claw),netPer:T.per.map(x=>x.net),
+      avgRate:totInc>0?(tax+claw)/totInc:0,totInc,retired:base.every(b=>!b.working),
+      spend,mortPay,contrib,evExp,evIn:evFree+evInc.reduce((s,x)=>s+x,0),ltc,wd,saved,short,bal,total:bal.rrsp+bal.tfsa+bal.nonreg+bal.cash,homeEq:Math.max(0,home-mort/deflate)});
+    // deaths at year end: registered plans and non-registered roll to the survivor
+    const dying=P.map((p,i)=>alive[i]&&ages[i]>=(n(p.lifeAge)||95));
+    dying.forEach((d,i)=>{ if(!d)return; alive[i]=false; row.events.push(P[i].name+" passes away at "+ages[i]); });
+    dying.forEach((d,i)=>{ if(!d)return; const j=alive.findIndex(Boolean); if(j<0)return;
+      acc[j].rrsp+=acc[i].rrsp; acc[j].tfsa+=acc[i].tfsa; acc[j].nonreg+=acc[i].nonreg; acc[i]={rrsp:0,tfsa:0,nonreg:0};
+      if(n(P[i].pension)>0&&ages[i]>=n(P[i].pensionStart)) survPen[j]+=n(P[i].pension)*n(P[i].survPct)/100;
+      deceased[j]=i; cash+=SURV.death; });
+    row.survCpp=base.reduce((s,b)=>s+(b.survCpp||0),0);
+    if(part<1){ row.partial=part;
+      ["work","cpp","oas","pen","rrifMin","melt","tfsaIn","tax","claw","payroll","split","spend","mortPay","contrib","evExp","evIn","ltc","saved","short","totInc","survCpp","cppShared"].forEach(key=>{if(typeof row[key]==="number") row[key]*=part;});
+      Object.keys(row.wd).forEach(key=>row.wd[key]*=part); }
+    rows.push(row);
+    if(!alive.some(Boolean)) break;
+  }
+  const end=rows[rows.length-1]||{bal:{rrsp:0},total:0,homeEq:0};
+  const z={salary:0,pay:payroll(0),rrspDed:0,cpp:0,oas:0,pension:0,splitIn:0,splitOut:0,age:95};
+  const estateTax=end.bal.rrsp>0?personTax({...z,rrspW:end.bal.rrsp,elig:end.bal.rrsp}).tax:0;
+  return {rows,firstShort,lifeTax:rows.reduce((s,x)=>s+x.tax+x.claw,0),lifeClaw:rows.reduce((s,x)=>s+x.claw,0),
+    estateTax,estate:end.total-estateTax+end.homeEq};
+}
+function findTargets(d){
+  const out=[];
+  for(const t of [0,30000,40000,45000,50000,55000,60000,65000,70000,80000,90000,100000]){
+    const c=clone(d); c.assume.meltTarget=t; const r=simulate(c);
+    out.push({t,life:r.lifeTax,claw:r.lifeClaw,estate:r.estate,short:r.firstShort===null?null:r.rows[r.firstShort].year});
+  }
+  const ok=out.filter(o=>o.short===null), pool=ok.length?ok:out;
+  const best=pool.reduce((b,o)=>(o.short===null&&b.short!==null)||o.estate>b.estate?o:b,pool[0]);
+  return {out,best};
+}
+
+/* ---------- state & storage ---------- */
+const KEY="run-the-numbers-v1";
+let store;
+let firstVisit=false;
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY)); if(validStore(s)){ migrate(s); return s;}}catch(e){}
+  firstVisit=true;
+  return {active:"s1",scenarios:[{id:"s1",name:"Example plan",example:true,data:clone(EXAMPLE)}]};
+}
+function validStore(s){return !!(s&&Array.isArray(s.scenarios)&&s.scenarios.length&&s.scenarios.every(x=>x&&x.id&&x.data&&Array.isArray(x.data.people)&&x.data.people.length===2&&x.data.house&&x.data.assume));}
+function migrate(s){
+    s.scenarios.forEach(sc=>{const d=sc.data; d.people.forEach(p=>{if(p.salary==null){p.salary=Math.round(n(p.takeHome)/0.72/1000)*1000; delete p.takeHome;}});
+      if(d.assume.split==null){d.assume.split="yes"; delete d.assume.taxRate;}
+      if(d.assume.meltTarget==null){d.assume.meltTarget=0; d.assume.meltEnd=71;}
+      d.people.forEach(p=>{if(p.tfsaRoom==null)p.tfsaRoom=0; if(p.lifeAge==null)p.lifeAge=n(d.assume.endAge)||95; if(p.survPct==null)p.survPct=60;});
+      if(d.house.survivorSpend==null)d.house.survivorSpend=70; if(!d.house.province)d.house.province="BC"; delete d.assume.endAge;
+      if(d.assume.volatility==null)d.assume.volatility=10; if(d.assume.flexCut==null)d.assume.flexCut=0; if(!d.assume.cppShare){d.assume.cppShare="no";d.assume.cppShareYears=100;}
+      if(!Array.isArray(d.house.events))d.house.events=[]; if(d.house.ltcCost==null){d.house.ltcCost=0;d.house.ltcAge=85;}});
+    if(!s.scenarios.some(x=>x.id===s.active)) s.active=s.scenarios[0].id;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+store=load();
+const active=()=>store.scenarios.find(s=>s.id===store.active)||store.scenarios[0];
+
+/* ---------- form ---------- */
+function inputFor(id,type,val){
+  const wrap=document.createElement("div");
+  wrap.className="field"+(type==="$"?" money":type==="%"?" pct":"");
+  let el;
+  if(type==="prov"){
+    el=document.createElement("select");
+    Object.entries(PROV).sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([v,o])=>{const op=document.createElement("option");op.value=v;op.textContent=o.name;el.appendChild(op);});
+    el.value=val||"BC";
+  } else if(type==="yesno"){
+    el=document.createElement("select");
+    [["yes","Yes"],["no","No"]].forEach(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;el.appendChild(o);});
+    el.value=val;
+  } else if(type==="select"){
+    el=document.createElement("select");
+    ORDERS.forEach(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;el.appendChild(o);});
+    el.value=val;
+  } else {
+    el=document.createElement("input");
+    if(type==="text"){el.type="text";}
+    else{el.type="number";el.inputMode="decimal";el.step=type==="%"?"0.1":type==="int"?"1":"1000";el.min="0";}
+    el.value=val;
+  }
+  el.id=id; wrap.appendChild(el); return wrap;
+}
+// Plain-language help for every input, shown from the ? buttons
+const HELP={
+  mode:"Choose “Just me” to plan for one person. Couple-only features like pension splitting, CPP sharing and survivor benefits are hidden.",
+  name:"Used to label the results, chart and table.",
+  birthYear:"Ages come from birth year. CPP, OAS, RRIF minimums and the age credit all start at set ages, so this matters.",
+  retireAge:"The age you stop working. Salary and savings contributions stop at the start of that year.",
+  lifeAge:"How long to plan for. Many planners use 95, since running out late is worse than leaving money behind. For a couple, try a shorter age for one spouse to see how the survivor manages.",
+  salary:"Pay before tax, per year, until you retire. The calculator works out income tax, CPP and EI from it. Self-employed? Use your net business income.",
+  rrsp:"Today's balance in RRSPs, RRIFs, spousal RRSPs, LIRAs and LIFs owned by this person, and defined contribution pension accounts. Every dollar withdrawn is taxable. An RRSP must become a RRIF by the end of the year you turn 71.",
+  tfsa:"Today's TFSA balance. Growth and withdrawals are tax-free and don't affect OAS or other benefits.",
+  nonreg:"Taxable investment accounts outside RRSPs and TFSAs. Tax on their growth and capital gains isn't calculated yet, so results here are slightly optimistic.",
+  rrspContrib:"What this person adds to their RRSP each year until retiring. Contributions lower taxable income.",
+  tfsaContrib:"What this person adds to their TFSA each year until retiring.",
+  tfsaRoom:"Unused TFSA room today, from CRA My Account. It already includes this year's $7,000. Extra RRIF or drawdown money goes here before a taxable account.",
+  pension:"A defined benefit (workplace) pension: the yearly amount before tax, in today's dollars. Your annual pension statement shows it. Assumed to rise with inflation. If you have a defined contribution plan, add its balance to the RRSP field instead.",
+  pensionStart:"The age the workplace pension begins. Often the same as retirement, but check your plan for reductions before its normal age.",
+  survPct:"How much of this pension continues to a surviving spouse. 60% is a common joint-and-survivor option; your pension statement says which you have.",
+  cpp65:"Your CPP (or QPP in Quebec) at 65, per month. Find it in your Statement of Contributions in My Service Canada Account. The 2026 maximum is $1,507.65; most people get noticeably less.",
+  cppStart:"Any age from 60 to 70. Each month before 65 cuts the pension 0.6% (36% less at 60). Each month after 65 adds 0.7% (42% more at 70). It's paid for life and rises with inflation, so waiting is a hedge against living long.",
+  oasYears:"Years lived in Canada after age 18. At least 10 qualifies for some OAS; 40 gets the full amount.",
+  oasStart:"Any age from 65 to 70. Each month you wait adds 0.6% (36% more at 70). OAS rises another 10% at 75. It's reduced by 15% of net income above $95,323 (2026), the OAS clawback.",
+  province:"Sets provincial tax rates and credits. Choose where you expect to live in retirement.",
+  spending:"What you'll spend each year in retirement after tax, in today's dollars. Leave out mortgage payments, big expenses and care costs, which have their own fields. A common starting point is about 70% of what you spend now.",
+  spendingLater:"Many people spend less in their late 70s and 80s as travel and activities slow down. Set the same as above to keep spending flat.",
+  spendingChangeAge:"The age, of the first person listed, when spending switches to the later amount. 0 keeps spending the same throughout.",
+  survivorSpend:"After a spouse dies, spending usually drops, but not by half, since housing and many costs stay the same. 70% is a common assumption.",
+  cash:"Chequing, savings accounts and GICs. Earns the cash return, and doesn't drop in market crashes.",
+  homeValue:"Today's value of your home. It counts toward your estate but isn't spent unless you downsize.",
+  mortgage:"What you still owe on your mortgage or HELOC today.",
+  mortgageRate:"The interest rate on that balance.",
+  mortgagePayment:"Your total payments per year (monthly payment × 12). Payments continue until the balance is paid off.",
+  downsizeAge:"The age, of the first person listed, when you sell and move somewhere cheaper. 0 means you stay put.",
+  downsizeAmount:"Cash freed up by downsizing, after selling costs and buying the new place, in today's dollars. Any mortgage is paid off first; the rest is invested.",
+  ltcCost:"Yearly cost per person for care at home, assisted living or long-term care, on top of regular spending. Private care can cost several thousand dollars a month; check rates where you live. 0 turns it off.",
+  ltcAge:"The age care costs start, for each person separately.",
+  returnRate:"Average yearly return on investments, before inflation, after fees. 5% to 6% is a common assumption for a balanced portfolio. If you pay 1.5% in fees, subtract it.",
+  cashRate:"Yearly interest on cash, before inflation. Check what your savings account or GICs pay.",
+  inflation:"How fast prices rise each year. The Bank of Canada targets 2%; 2.5% adds a margin. Results are shown in today's dollars.",
+  volatility:"How much returns swing from year to year, used by the stress test and market histories. About 10% for a balanced portfolio, 15% for mostly stocks, 6% for mostly bonds.",
+  flexCut:"In retirement, spend this much less in the year after markets fall. Being willing to tighten your belt in bad years makes a plan much more resilient. 0 turns it off.",
+  split:"Couples can move up to half of eligible pension income to the lower-income spouse's tax return: workplace pensions at any age, RRIF income from 65. The calculator picks the best split each year.",
+  cppShare:"Spouses 60 or older who both collect CPP can share the part earned while together. It can lower tax when one CPP is much bigger. If pension splitting already evens out your incomes, it adds little.",
+  cppShareYears:"The share of your working years you were together. Only CPP earned while together is shared.",
+  order:"Which accounts to draw from first when income doesn't cover spending. Cash and taxable accounts first is a common default; the optimizer can test the others.",
+  meltTarget:"Draws RRSP money each year after retiring until taxable income reaches this level, and moves what you don't spend into your TFSA. It fills low tax brackets before CPP and OAS start and shrinks RRIF minimums later. Try the RRSP drawdown finder to choose a level.",
+  meltEnd:"The last age for the planned drawdown. From 72, RRIF minimum withdrawals take over.",
+  events:"Big one-time or repeating costs (a car, a roof, helping family) and money coming in (an inheritance, part-time work). Ages follow the first person listed."
+};
+function helpBtn(key,label){
+  if(!HELP[key]) return null;
+  const b=document.createElement("button"); b.type="button"; b.className="help-btn"; b.textContent="?";
+  b.setAttribute("aria-label","What is "+label+"?"); b.setAttribute("aria-expanded","false"); b.dataset.help=key;
+  return b;
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest(".help-btn"); if(!b) return;
+  e.preventDefault(); e.stopPropagation();
+  const host=b.closest("label")||b.parentElement; let pop=host.querySelector(".help-pop");
+  if(pop){pop.remove(); b.setAttribute("aria-expanded","false"); return;}
+  pop=document.createElement("span"); pop.className="help-pop"; pop.setAttribute("role","note"); pop.textContent=HELP[b.dataset.help];
+  host.appendChild(pop); b.setAttribute("aria-expanded","true");
+});
+
+function labelFor(id,text,hint,names,key){
+  const l=document.createElement("label"); l.htmlFor=id; l.textContent=text;
+  const hb=helpBtn(key,text); if(hb){l.append(" ",hb);}
+  if(hint){const s=document.createElement("small"); s.textContent=hint.replace("@0", names?("of "+names[0]):""); l.appendChild(s);}
+  return l;
+}
+function buildForm(){
+  const d=active().data;
+  const pg=document.getElementById("peopleGrid"); pg.innerHTML=""; const single=isSingle(d), PP=ppl(d);
+  pg.className="pair"+(single?" one":"");
+  document.getElementById("hhMode").value=single?"single":"couple";
+  document.querySelector("#fsPeople legend").textContent=single?"You":"The two of you";
+  const h0=document.createElement("div");h0.className="colh blank";pg.appendChild(h0);
+  PP.forEach((p,i)=>{const h=document.createElement("div");h.className="colh";h.id="colh"+i;h.textContent=p.name||("Spouse "+(i+1));pg.appendChild(h);});
+  PEOPLE_FIELDS.forEach(f=>{
+    if(f[0]==="g"){const g=document.createElement("div");g.className="group-label";g.textContent=f[1];pg.appendChild(g);return;}
+    const [key,label,type,hint]=f;
+    if(single&&COUPLE_ONLY.has(key)) return;
+    pg.appendChild(labelFor("p0_"+key,label,hint,null,key));
+    PP.forEach((p,i)=>{
+      const w=inputFor("p"+i+"_"+key,type,p[key]);
+      if(i===1) w.querySelector("input,select").setAttribute("aria-label",label+" for "+(p.name||"Spouse 2"));
+      pg.appendChild(w);
+    });
+  });
+  const names=d.people.map(p=>p.name);
+  [["houseGrid",HOUSE_FIELDS,"h_",d.house],["assumeGrid",ASSUME_FIELDS,"a_",d.assume]].forEach(([gid,fields,pre,obj])=>{
+    const g=document.getElementById(gid); g.innerHTML="";
+    fields.forEach(f=>{
+      if(f[0]==="g"){const x=document.createElement("div");x.className="group-label";x.textContent=f[1];g.appendChild(x);return;}
+      const [key,label,type,hint]=f;
+      if(single&&COUPLE_ONLY.has(key)) return;
+      g.appendChild(labelFor(pre+key,label,hint,names,key));
+      g.appendChild(inputFor(pre+key,type,obj[key]));
+    });
+  });
+  buildEvents();
+  document.getElementById("scenName").value=active().name;
+  document.getElementById("exampleNote").hidden=!active().example;
+}
+const EV_KINDS=[["expense","Expense"],["income","Taxable income (e.g. part-time work)"],["free","Tax-free money in (e.g. inheritance)"]];
+function buildEvents(){
+  const d=active().data, L=document.getElementById("evList"); L.innerHTML="";
+  document.getElementById("evHint").textContent="One-time or repeating costs and money coming in, timed by "+(d.people[0].name||"Spouse 1")+"'s age. Today's dollars.";
+  const mk=(i,key,type,val,opts)=>{const w=document.createElement("div"); w.className="field"+(type==="$"?" money":"");
+    let el; if(opts){el=document.createElement("select"); opts.forEach(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;el.appendChild(o);}); el.value=val;}
+    else{el=document.createElement("input"); el.type=type==="text"?"text":"number"; if(type!=="text"){el.inputMode="decimal";el.min="0";el.step=type==="$"?"1000":"1";} el.value=val;}
+    el.id="ev"+i+"_"+key; el.dataset.ev=i; el.dataset.k=key; w.appendChild(el); return w;};
+  const lab=(text,fieldEl,cls)=>{const l=document.createElement("label"); if(cls)l.className=cls; l.htmlFor=fieldEl.firstChild.id; l.append(text,fieldEl); return l;};
+  d.house.events.forEach((e,i)=>{
+    const row=document.createElement("div"); row.className="ev";
+    const top=document.createElement("div"); top.className="full";
+    const nm=lab("What",mk(i,"label","text",e.label||"")); nm.style.flex="1";
+    const rm=document.createElement("button"); rm.type="button"; rm.className="rm"; rm.textContent="Remove"; rm.dataset.rm=i; rm.setAttribute("aria-label","Remove "+(e.label||"event"));
+    top.append(nm,rm); row.appendChild(top);
+    row.appendChild(lab("Type",mk(i,"kind","",e.kind||"expense",EV_KINDS),"wide"));
+    row.appendChild(lab("Amount",mk(i,"amount","$",e.amount||0),"wide"));
+    row.appendChild(lab("At age",mk(i,"age","int",e.age||0)));
+    row.appendChild(lab("Repeat every (yrs)",mk(i,"every","int",e.every||0)));
+    row.appendChild(lab("Until age",mk(i,"until","int",e.until||0)));
+    const who=lab("Whose income",mk(i,"who","",String(e.who||"0"),ppl(d).map((p,j)=>[String(j),p.name||("Spouse "+(j+1))])));
+    who.hidden=e.kind!=="income"||isSingle(d); row.appendChild(who);
+    L.appendChild(row);
+  });
+  if(!d.house.events.length){const p=document.createElement("p"); p.className="fhint"; p.style.margin="0"; p.textContent="No events yet. Add a car, a renovation, help for family, an inheritance, or part-time work."; L.appendChild(p);}
+}
+document.getElementById("hhMode").addEventListener("change",e=>{ e.stopPropagation(); readForm(); active().data.house.mode=e.target.value; active().example=false; save(); buildForm(); render(); });
+document.getElementById("btnAddEv").onclick=()=>{const d=active().data; const a0=new Date().getFullYear()+1-n(d.people[0].birthYear);
+  d.house.events.push({label:"",kind:"expense",amount:10000,age:Math.max(a0,n(d.people[0].retireAge)),every:0,until:0,who:"0"});
+  active().example=false; save(); buildEvents(); render(); const ins=document.querySelectorAll("#evList input[data-k=label]"); ins[ins.length-1].focus();};
+document.getElementById("evList").addEventListener("click",e=>{const b=e.target.closest("button[data-rm]"); if(!b)return;
+  active().data.house.events.splice(+b.dataset.rm,1); active().example=false; save(); buildEvents(); render();});
+function readForm(){
+  const s=active(), d=s.data;
+  d.people.forEach((p,i)=>PEOPLE_FIELDS.forEach(f=>{ if(f[0]==="g")return; const el=document.getElementById("p"+i+"_"+f[0]); if(el) p[f[0]]=f[2]==="text"?el.value:(el.value===""?0:+el.value); }));
+  HOUSE_FIELDS.forEach(f=>{ if(f[0]==="g")return; const el=document.getElementById("h_"+f[0]); if(!el)return; d.house[f[0]]=f[2]==="prov"?el.value:(el.value===""?0:+el.value); });
+  ASSUME_FIELDS.forEach(f=>{ if(f[0]==="g")return; const el=document.getElementById("a_"+f[0]); if(!el)return; d.assume[f[0]]=(f[2]==="select"||f[2]==="yesno")?el.value:(el.value===""?0:+el.value); });
+  d.people.forEach((p,i)=>{const h=document.getElementById("colh"+i); if(h) h.textContent=p.name||("Spouse "+(i+1));});
+  document.querySelectorAll("#evList [data-ev]").forEach(el=>{const e=d.house.events[+el.dataset.ev]; if(!e)return; const k=el.dataset.k;
+    e[k]=(k==="label"||k==="kind"||k==="who")?el.value:(el.value===""?0:+el.value);
+    if(k==="kind"){const w=document.getElementById("ev"+el.dataset.ev+"_who"); if(w) w.closest("label").hidden=el.value!=="income";}});
+}
+
+/* ---------- render ---------- */
+const money=v=>{const a=Math.abs(v); const s=a>=1e6?(a/1e6).toFixed(2)+"M":a>=1e3?Math.round(a/1e3).toLocaleString("en-CA")+"k":Math.round(a).toString(); return (v<0?"−$":"$")+s;};
+const full=v=>v?(v<0?"−":"")+"$"+Math.round(Math.abs(v)).toLocaleString("en-CA"):"–";
+let last=null;
+
+function render(){
+  const s=active(), d=s.data, res=simulate(d); last={res,d};
+  const {rows,firstShort}=res, P=ppl(d);
+  const names=P.map((p,i)=>p.name||("Spouse "+(i+1)));
+  const v=document.getElementById("verdict"), big=document.getElementById("vBig"), txt=document.getElementById("vText");
+  if(!rows.length){big.textContent="Check the birth years";txt.textContent="";v.className="verdict";return;}
+  const endRow=rows[rows.length-1];
+  if(firstShort===null){
+    const li=endRow.alive.lastIndexOf(true)>=0?endRow.alive.lastIndexOf(true):0;
+    v.className="verdict ok"; big.textContent="Yes, for the whole plan";
+    txt.textContent="Your investments cover spending every year until "+endRow.year+", when "+names[li]+" is "+endRow.ages[li]+", with "+money(endRow.total)+" left over in today's dollars.";
+  } else {
+    const r=rows[firstShort], shortYears=rows.filter(x=>x.short>0).length, avg=rows.filter(x=>x.short>0).reduce((s,x)=>s+x.short,0)/shortYears;
+    v.className="verdict short"; big.textContent="Runs short in "+r.year;
+    txt.textContent="When "+names.map((nm,i)=>nm+" is "+r.ages[i]).join(" and ")+". After that, CPP, OAS and pensions fall about "+money(avg)+" a year short of spending"+(endRow.homeEq>0?", though you'd still have about "+money(endRow.homeEq)+" in home equity.":".");
+  }
+  const di=rows.findIndex(x=>!x.alive.every(Boolean));
+  if(di>0){const b=rows[di-1],a=rows[di],inc=x=>x.cpp+x.oas+x.pen, dn=b.alive.findIndex((al,i)=>!a.alive[i]);
+    txt.textContent+=" After "+names[dn]+" dies in "+b.year+", guaranteed income drops from "+money(inc(b))+" to "+money(inc(a))+" a year"+(a.avgRate>b.avgRate+0.005?" and the tax rate rises to "+(a.avgRate*100).toFixed(1)+"%":"")+".";}
+  const clawTot=rows.reduce((s,x)=>s+x.claw,0);
+  if(clawTot>0) txt.textContent+=" OAS clawback takes about "+money(clawTot)+" over the plan.";
+  // stats
+  const retYear=Math.max(...P.map(p=>n(p.birthYear)+n(p.retireAge)));
+  const rr=rows.find(x=>x.year===retYear-1)||rows[0];
+  document.getElementById("stRetireK").textContent="Investments when "+bothPhrase(d);
+  document.getElementById("stRetire").textContent=money(rows.find(x=>x.year===retYear)?rr.total:rows[0].total);
+  document.getElementById("stIncome").textContent=money(res.lifeTax);
+  document.getElementById("stEnd").textContent=money(res.estate);
+  document.getElementById("stEndK").textContent="Estate after tax, incl. "+money(endRow.homeEq)+" home"+(res.estateTax>0?" and "+money(res.estateTax)+" tax on the final RRIF":"");
+  renderTakeaways(d,res);
+  drawChart();
+  renderStress(); staleMC();
+  renderTable(rows,names);
+  renderCompare();
+}
+
+function renderTable(rows,names){
+  const cols=[["Year",x=>x.partial?x.year+" (rest)":x.year],[names.join(" / "),x=>x.ages.map((a,i)=>x.alive[i]?a:"–").join(" / ")],["CPP survivor",x=>full(x.survCpp)],
+    ["Work pay",x=>full(x.work)],["CPP",x=>full(x.cpp)],["OAS",x=>full(x.oas)],["Pension",x=>full(x.pen)],
+    ["RRIF min.",x=>full(x.rrifMin)],["Drawdown",x=>full(x.melt)],["Income tax",x=>full(-x.tax)],["OAS clawback",x=>full(-x.claw)],["Avg. rate",x=>x.totInc?(x.avgRate*100).toFixed(1)+"%":"–"],
+    ["Pension split",x=>x.split?full(x.split)+" → "+names[1-x.splitFrom]:"–"],["CPP shared",x=>full(x.cppShared)],["CPP / EI premiums",x=>full(-x.payroll)],["Spending",x=>full(-x.spend)],["Mortgage",x=>full(-x.mortPay)],["Events",x=>full(x.evIn-x.evExp)],["Care",x=>full(-x.ltc)],["Saving",x=>full(-x.contrib)],
+    ["From cash",x=>full(x.wd.cash)],["From non-reg",x=>full(x.wd.nonreg)],["From RRSP",x=>full(x.wd.rrsp)],["From TFSA",x=>full(x.wd.tfsa)],
+    ["To TFSA",x=>full(x.tfsaIn)],["Shortfall",x=>full(-x.short)],["Investments",x=>full(x.total)],["Home equity",x=>full(x.homeEq)],["Notes",x=>x.events.join(", ")]];
+  let h="<thead><tr>"+cols.map(c=>"<th>"+esc(c[0])+"</th>").join("")+"</tr></thead><tbody>";
+  rows.forEach(x=>{h+="<tr class=\""+(x.short>0?"short":x.events.length?"event":"")+"\">"+cols.map(c=>"<td>"+esc(String(c[1](x)))+"</td>").join("")+"</tr>";});
+  document.getElementById("tbl").innerHTML=h+"</tbody>";
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
+
+function renderCompare(){
+  const panel=document.getElementById("comparePanel"), box=document.getElementById("compare");
+  if(store.scenarios.length<2){panel.hidden=true;return;}
+  panel.hidden=false; box.innerHTML="";
+  store.scenarios.forEach(s=>{
+    const r=simulate(s.data), e=r.rows[r.rows.length-1]||{total:0,homeEq:0};
+    const row=document.createElement("div"); row.className="crow";
+    const nm=document.createElement("span"); nm.textContent=s.name+(s.id===store.active?" (open)":""); nm.style.fontWeight=s.id===store.active?"700":"400";
+    const pill=document.createElement("span");
+    if(r.firstShort===null){pill.className="pill ok";pill.textContent="Lasts";}
+    else{pill.className="pill short";pill.textContent="Short in "+r.rows[r.firstShort].year;}
+    const end=document.createElement("span"); end.className="num"; end.style.fontSize="13px"; end.textContent=money(r.lifeTax)+" tax · "+money(r.estate)+" estate";
+    row.append(nm,pill,end); box.appendChild(row);
+  });
+}
+
+// Plain-language takeaways: income picture, biggest risk, biggest lever
+function takeaways(d,res){
+  const rows=res.rows, P=ppl(d), names=P.map(p=>p.name), single=isSingle(d), out=[];
+  if(!rows.length) return out;
+  const we=single?"you":"you both", your="your";
+  // 1. income picture, once government pensions have started
+  const startAge=P.map(p=>Math.max(clamp(n(p.cppStart),60,70),clamp(n(p.oasStart),65,70),n(p.retireAge)));
+  const ri=rows.find(r=>!r.partial&&r.alive.every(Boolean)&&r.ages.every((a,i)=>a>=startAge[i]));
+  if(ri){ const g=ri.cpp+ri.oas+ri.pen, need=ri.spend+ri.mortPay, pc=need>0?Math.round(g/need*100):0;
+    out.push({k:"Income",t:"From "+ri.year+", CPP, OAS"+(ri.pen>0?" and "+your+" workplace pension":"")+" pay about "+money(g)+" a year, before tax. That covers roughly "+Math.min(pc,999)+"% of "+your+" spending"+(pc<100?"; "+your+" savings make up the rest.":", so "+your+" savings are mostly a cushion.")}); }
+  // 2. biggest risk
+  const r0=realRet(d), k0=clamp(retYearOf(d)-START_YEAR,0,Math.max(0,rows.length-1)), rets=Array(80).fill(r0); rets[k0]=-0.25;
+  const st=simulate(d,rets), endRow=rows[rows.length-1];
+  const di=rows.findIndex(x=>!x.alive.every(Boolean));
+  const clawTot=res.lifeClaw;
+  if(res.firstShort!==null){
+    const r=rows[res.firstShort]; out.push({k:"Risk",t:"Spending is higher than "+your+" savings and pensions can support. The money runs short in "+r.year+", when "+names.map((nm,i)=>(single?"you are ":nm+" is ")+r.ages[i]).join(" and ")+"."});
+  } else if(st.firstShort!==null){
+    out.push({k:"Risk",t:"A market drop early in retirement. If markets fell 25% in "+(START_YEAR+k0)+", the money would run short in "+st.rows[st.firstShort].year+". Keeping a cash cushion, or being ready to trim spending, protects against this."});
+  } else if(!single&&di>0){
+    const b=rows[di-1],a=rows[di],inc=x=>x.cpp+x.oas+x.pen, drop=1-inc(a)/Math.max(1,inc(b)), dn=b.alive.findIndex((al,i)=>!a.alive[i]);
+    out.push({k:"Risk",t:"Losing a spouse. When "+names[dn]+" dies, guaranteed income falls about "+Math.round(drop*100)+"%, from "+money(inc(b))+" to "+money(inc(a))+" a year, while many costs stay the same."});
+  } else if(clawTot>0){
+    out.push({k:"Risk",t:"OAS clawback. Higher income later in life costs about "+money(clawTot)+" of OAS over the plan. Drawing RRSP money earlier can reduce it."});
+  } else if(res.estateTax>50000){
+    out.push({k:"Risk",t:"Tax at the end. About "+money(res.estateTax)+" of the RRIF left at the end would be taxed in one final return."});
+  } else out.push({k:"Risk",t:"No major weak spots in the steady projection. Run the market histories below to see how it holds up in rough markets."});
+  // 3. biggest lever (quick deterministic tests)
+  const tests=[];
+  if(P.some(p=>n(p.cppStart)<70||n(p.oasStart)<70)) tests.push(["Delaying CPP and OAS to 70",x=>ppl(x).forEach(p=>{p.cppStart=70;p.oasStart=70;})]);
+  if(!n(d.assume.meltTarget)&&P.reduce((s,p)=>s+n(p.rrsp),0)>100000) tests.push(["Drawing "+(single?"your":"each")+" RRSP up to $55,000 a year after retiring",x=>{x.assume.meltTarget=55000;}]);
+  if(!single&&d.assume.cppShare!=="yes") tests.push(["Sharing CPP between you",x=>{x.assume.cppShare="yes";}]);
+  if(res.firstShort!==null){ tests.push(["Spending 10% less",x=>{x.house.spending=n(x.house.spending)*.9;x.house.spendingLater=n(x.house.spendingLater)*.9;}]);
+    tests.push(["Working one more year",x=>ppl(x).forEach(p=>p.retireAge=n(p.retireAge)+1)]); }
+  let best=null;
+  tests.forEach(([label,fn])=>{const x=clone(d); fn(x); const r=simulate(x);
+    const score=res.firstShort!==null?(r.firstShort===null?1e9:r.rows[r.firstShort].year-rows[res.firstShort].year)*1e6+(r.estate-res.estate):r.estate-res.estate;
+    if(!best||score>best.score) best={label,score,r};});
+  if(best&&best.score>10000){
+    const r=best.r;
+    const what=res.firstShort!==null?(r.firstShort===null?"makes the money last for the whole plan":"pushes the shortfall back to "+r.rows[r.firstShort].year):"adds about "+money(r.estate-res.estate)+" to "+your+" estate after tax"+(r.lifeTax<res.lifeTax-5000?" and cuts lifetime tax by "+money(res.lifeTax-r.lifeTax):"");
+    out.push({k:"Best lever",t:best.label+" "+what+". Try “Find my best plan” to test combinations."});
+  } else out.push({k:"Best lever",t:"Your settings are already close to the best of the simple changes we tested. “Find my best plan” can test combinations."});
+  return out;
+}
+function renderTakeaways(d,res){
+  const ul=document.getElementById("takeaways"), items=takeaways(d,res);
+  ul.innerHTML=items.map(x=>"<li><b>"+esc(x.k)+".</b> "+esc(x.t)+"</li>").join("");
+}
+
+/* ---------- chart ---------- */
+const canvas=document.getElementById("chart"), box=document.getElementById("chartBox"), tip=document.getElementById("tip");
+let geom=null;
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function niceMax(v){if(v<=0)return 100000;const p=Math.pow(10,Math.floor(Math.log10(v)));const m=v/p;return (m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*p;}
+function drawChart(hoverIdx){
+  if(!last) return;
+  const {res,d}=last, rows=res.rows; if(!rows.length) return;
+  const dpr=window.devicePixelRatio||1, W=box.clientWidth, Ht=box.clientHeight;
+  canvas.width=W*dpr; canvas.height=Ht*dpr; const c=canvas.getContext("2d"); c.setTransform(dpr,0,0,dpr,0,0);
+  c.clearRect(0,0,W,Ht);
+  const L=54,R=12,T=10,B=40, w=W-L-R, h=Ht-T-B;
+  const keys=["rrsp","tfsa","nonreg","cash"], cols={rrsp:css("--s-rrsp"),tfsa:css("--s-tfsa"),nonreg:css("--s-nonreg"),cash:css("--s-cash")};
+  const ymax=niceMax(Math.max(...rows.map(r=>r.total))*1.05);
+  const X=i=>L+(rows.length===1?0:i*w/(rows.length-1)), Y=v=>T+h-(v/ymax)*h;
+  c.font="11px "+css("--f-num"); c.fillStyle=css("--muted"); c.strokeStyle=css("--line"); c.lineWidth=1;
+  for(let i=0;i<=4;i++){const v=ymax*i/4,y=Math.round(Y(v))+.5; c.beginPath();c.moveTo(L,y);c.lineTo(L+w,y);c.stroke(); c.textAlign="right";c.textBaseline="middle";c.fillText(money(v),L-8,y);}
+  // stacked areas
+  let base=rows.map(()=>0);
+  keys.forEach(k=>{
+    const top=rows.map((r,i)=>base[i]+Math.max(0,r.bal[k]));
+    c.beginPath(); rows.forEach((r,i)=>{const x=X(i),y=Y(top[i]); i?c.lineTo(x,y):c.moveTo(x,y);});
+    for(let i=rows.length-1;i>=0;i--) c.lineTo(X(i),Y(base[i]));
+    c.closePath(); c.fillStyle=cols[k]; c.globalAlpha=.85; c.fill(); c.globalAlpha=1;
+    base=top;
+  });
+  // x labels: year + spouse 1 age
+  c.textAlign="center"; c.textBaseline="top"; c.fillStyle=css("--muted");
+  const step=Math.max(1,Math.ceil(rows.length/(w/62)));
+  rows.forEach((r,i)=>{ if(i%step===0||i===rows.length-1 && i%step>step/2){ c.fillText(String(r.year),X(i),T+h+6); c.fillText("age "+r.ages[0],X(i),T+h+20);} });
+  // retirement lines
+  c.setLineDash([4,4]); c.strokeStyle=css("--fg"); c.globalAlpha=.45;
+  ppl(d).forEach(p=>{const i=rows.findIndex(r=>r.year===n(p.birthYear)+n(p.retireAge)); if(i>0){c.beginPath();c.moveTo(X(i)+.5,T);c.lineTo(X(i)+.5,T+h);c.stroke();}});
+  c.setLineDash([1,4]); c.lineWidth=2; c.globalAlpha=.6;
+  rows.forEach((r,i)=>{ if(i>0&&!r.alive.every(Boolean)&&rows[i-1].alive.every(Boolean)){c.beginPath();c.moveTo(X(i)+.5,T);c.lineTo(X(i)+.5,T+h);c.stroke();} });
+  c.setLineDash([]); c.globalAlpha=1; c.lineWidth=1;
+  // shortfall marker
+  if(res.firstShort!==null){const x=X(res.firstShort); c.strokeStyle=css("--bad"); c.lineWidth=2; c.beginPath();c.moveTo(x,T);c.lineTo(x,T+h);c.stroke();
+    c.fillStyle=css("--bad"); c.font="600 11px "+css("--f-body"); c.textAlign=x>L+w-90?"right":"left"; c.textBaseline="top"; c.fillText("Runs short",x+(x>L+w-90?-6:6),T+2);}
+  if(hoverIdx!=null){c.strokeStyle=css("--fg");c.lineWidth=1;c.beginPath();c.moveTo(X(hoverIdx)+.5,T);c.lineTo(X(hoverIdx)+.5,T+h);c.stroke();}
+  geom={L,w,n:rows.length,X};
+}
+function onMove(e){
+  if(!geom||!last) return;
+  const rect=canvas.getBoundingClientRect(), x=e.clientX-rect.left;
+  const i=clamp(Math.round((x-geom.L)/geom.w*(geom.n-1)),0,geom.n-1), r=last.res.rows[i];
+  drawChart(i);
+  const names=ppl(last.d).map(p=>p.name);
+  tip.innerHTML="<b>"+r.year+" · "+names.map((nm,i)=>esc(nm)+" "+r.ages[i]).join(", ")+"</b>"+
+    [["RRSP / RRIF",r.bal.rrsp],["TFSA",r.bal.tfsa],["Non-reg",r.bal.nonreg],["Cash",r.bal.cash],["Total",r.total]].map(a=>"<div><span>"+a[0]+"</span><span class=\"num\">"+full(a[1])+"</span></div>").join("")+
+    (r.short>0?"<div style=\"color:var(--bad)\"><span>Shortfall</span><span class=\"num\">"+full(r.short)+"</span></div>":"");
+  tip.hidden=false;
+  const tx=geom.X(i); tip.style.left=(tx>rect.width/2? tx-tip.offsetWidth-12 : tx+12)+"px"; tip.style.top="8px";
+}
+canvas.addEventListener("pointermove",onMove);
+canvas.addEventListener("pointerleave",()=>{tip.hidden=true;drawChart();});
+new ResizeObserver(()=>drawChart()).observe(box);
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>drawChart());}catch(e){}
+new MutationObserver(()=>{drawChart();if(typeof drawMC==="function")drawMC();}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+/* ---------- scenarios ---------- */
+function renderTabs(){
+  const t=document.getElementById("scenTabs"); t.innerHTML="";
+  store.scenarios.forEach(s=>{const b=document.createElement("button");b.type="button";b.className="tab";b.textContent=s.name;b.setAttribute("aria-pressed",String(s.id===store.active));
+    b.onclick=()=>{store.active=s.id;save();renderTabs();buildForm();render();}; t.appendChild(b);});
+  const add=document.createElement("button");add.type="button";add.className="tab ghost";add.textContent="+ Copy";add.title="Copy the open scenario";add.onclick=copyScenario;t.appendChild(add);
+  document.getElementById("btnDelete").disabled=store.scenarios.length<2;
+}
+function copyScenario(){
+  if(store.scenarios.length>=6) return;
+  const s=active(), id="s"+Date.now();
+  store.scenarios.push({id,name:s.name+" (copy)",example:s.example,data:clone(s.data)}); store.active=id;
+  save();renderTabs();buildForm();render();
+}
+document.getElementById("btnCopy").onclick=copyScenario;
+function runFinder(){
+  const d=active().data, {out,best}=findTargets(d), cur=n(d.assume.meltTarget);
+  const tb=document.getElementById("finderTbl");
+  let h="<thead><tr><th>Draw up to</th><th>Lifetime tax</th><th>OAS clawback</th><th>Estate after tax</th><th>Money lasts</th><th></th></tr></thead><tbody>";
+  out.forEach(o=>{h+="<tr class=\""+(o===best?"event":"")+"\"><td>"+(o.t?full(o.t):"Off")+(o===best?" · best":"")+(o.t===cur?" (current)":"")+"</td><td>"+full(o.life)+"</td><td>"+full(o.claw)+"</td><td>"+full(o.estate)+"</td><td>"+(o.short===null?"Yes":"Short in "+o.short)+"</td><td>"+(o.t===cur?"":"<button class=\"btn\" type=\"button\" data-t=\""+o.t+"\" style=\"padding:3px 9px;font-size:12px\">Use</button>")+"</td></tr>";});
+  tb.innerHTML=h+"</tbody>";
+  document.getElementById("finderWrap").hidden=false;
+  const base=out.find(o=>o.t===0), gain=best.estate-base.estate;
+  document.getElementById("finderNote").textContent=best.t===0?"Drawing the RRSP early doesn't help with these numbers. Your current approach is already the best of the targets tested.":
+    "Drawing up to "+full(best.t)+" a year leaves about "+money(gain)+" more after tax than no drawdown"+(base.life>best.life?", and cuts lifetime tax by "+money(base.life-best.life)+".":".");
+}
+document.getElementById("btnFind").onclick=runFinder;
+
+/* market risk */
+function realRet(d){return (1+n(d.assume.returnRate)/100)/(1+n(d.assume.inflation)/100)-1;}
+function retYearOf(d){return Math.max(...ppl(d).map(p=>n(p.birthYear)+n(p.retireAge)));}
+function renderStress(){
+  const d=active().data, base=simulate(d), len=base.rows.length, r=realRet(d);
+  const k0=clamp(retYearOf(d)-START_YEAR,0,Math.max(0,len-1));
+  const rets=Array(80).fill(r); rets[k0]=-0.25;
+  const st=simulate(d,rets), yr=START_YEAR+k0, el=document.getElementById("stress");
+  const loss=base.estate-st.estate;
+  el.innerHTML="<b>Stress test:</b> if markets drop 25% in "+yr+", your first full year after "+bothPhrase(d)+", "+
+    (st.firstShort===null?"the money still lasts. Your estate would be about "+esc(money(loss))+" smaller.":"<span style=\"color:var(--bad)\">the money runs short in "+st.rows[st.firstShort].year+"</span>.");
+}
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+let mcJob=0, mcData=null;
+// Runs N market histories with a fixed seed so results are comparable between runs
+function mcRun(d,N,job,onProg){
+  const r=realRet(d), vol=n(d.assume.volatility)/100;
+  const rand=rng(20261023), gauss=()=>{let u=0,v=0;while(!u)u=rand();while(!v)v=rand();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+  const runs=[]; let i=0;
+  return new Promise(res=>{(function chunk(){
+    if(job!==mcJob) return res(null);
+    const t0=performance.now();
+    while(i<N&&performance.now()-t0<40){
+      const rets=Array.from({length:80},()=>Math.max(-0.6,r+vol*gauss()));
+      const s=simulate(d,rets); runs.push({totals:s.rows.map(x=>x.total),short:s.firstShort===null?null:s.rows[s.firstShort].year,estate:s.estate}); i++;
+    }
+    if(onProg) onProg(i/N);
+    if(i<N) setTimeout(chunk,0); else res(runs);
+  })();});
+}
+const okShare=runs=>runs.filter(x=>x.short===null).length/runs.length;
+async function runMC(){
+  const d=clone(active().data), job=++mcJob, btn=document.getElementById("btnMC"); btn.disabled=true;
+  const runs=await mcRun(d,500,job,f=>btn.textContent="Running… "+Math.round(f*100)+"%");
+  if(!runs) return;
+  btn.disabled=false; btn.textContent="Run again";
+  const b=simulate(d).rows; mcData={runs,years:b.map(x=>x.year),ages:b.map(x=>x.ages[0])};
+  showMC();
+}
+
+/* what would it take */
+let solveJob=0, solveResult=null;
+async function runSolve(){
+  const lever=document.getElementById("solveLever").value, target=n(document.getElementById("solveTarget").value)/100;
+  const d0=clone(active().data), job=++mcJob, btn=document.getElementById("btnSolve"), out=document.getElementById("solveOut");
+  btn.disabled=true; out.innerHTML=""; solveResult=null;
+  const N=200; let done=0, total=1;
+  const prog=f=>btn.textContent="Working… "+Math.round((done+f)/total*100)+"%";
+  const test=async c=>{const r=await mcRun(c,N,job,prog); done++; return r?okShare(r):null;};
+  const fmtP=x=>Math.round(x*100)+"%";
+  let html="", apply=null;
+  if(lever==="spend"){
+    total=8;
+    const scaled=k=>{const c=clone(d0); c.house.spending=n(d0.house.spending)*k; c.house.spendingLater=n(d0.house.spendingLater)*k; return c;};
+    let lo=0.4, hi=1.6;
+    const top=await test(scaled(hi)); if(top===null) return;
+    if(top>=target){ apply={spending:Math.round(n(d0.house.spending)*hi/500)*500,spendingLater:Math.round(n(d0.house.spendingLater)*hi/500)*500};
+      html="You could spend at least "+full(apply.spending)+" a year ("+full(apply.spendingLater)+" later) and still reach "+fmtP(target)+". That's 60% more than now."; }
+    else{
+      for(let it=0;it<7;it++){const mid=(lo+hi)/2, p=await test(scaled(mid)); if(p===null) return; (p>=target)?lo=mid:hi=mid;}
+      const sp=Math.floor(n(d0.house.spending)*lo/500)*500, sl=Math.floor(n(d0.house.spendingLater)*lo/500)*500;
+      apply={spending:sp,spendingLater:sl};
+      const diff=sp-n(d0.house.spending);
+      html="To reach "+fmtP(target)+", spend about <b>"+full(sp)+"</b> a year, then "+full(sl)+" later. That's "+(diff<0?full(-diff)+" less":full(diff)+" more")+" than now.";
+    }
+  } else if(lever==="retire"){
+    total=6; let found=null, last=0;
+    for(let add=0;add<=5;add++){const c=clone(d0); c.people.forEach(p=>p.retireAge=n(p.retireAge)+add); const p=await test(c); if(p===null) return; last=p; if(p>=target){found={add,p};break;}}
+    if(!found) html="Even retiring 5 years later only reaches "+fmtP(last)+". Combine this with lower spending.";
+    else if(found.add===0) html="Your current retirement ages already reach "+fmtP(found.p)+".";
+    else{ apply={retireAdd:found.add}; html="Working <b>"+found.add+" more year"+(found.add>1?"s":"")+"</b>"+(isSingle(d0)?"":" each")+" ("+ppl(d0).map(p=>esc(p.name)+" to "+(n(p.retireAge)+found.add)).join(", ")+") reaches "+fmtP(found.p)+"."; }
+  } else {
+    const opts=[["As you have it",c=>c],["CPP at 70",c=>{c.people.forEach(p=>p.cppStart=70);return c;}],["CPP and OAS at 70",c=>{c.people.forEach(p=>{p.cppStart=70;p.oasStart=70;});return c;}]];
+    total=opts.length; const res=[];
+    for(const [label,fn] of opts){const p=await test(fn(clone(d0))); if(p===null) return; res.push([label,p]);}
+    const best=res.reduce((b,x)=>x[1]>b[1]?x:b,res[0]);
+    html=res.map(x=>esc(x[0])+": <b>"+fmtP(x[1])+"</b>").join(" · ")+".";
+    if(best!==res[0]){apply={gov:best[0]}; html+=" Delaying helps because each year of waiting raises these lifetime, inflation-protected pensions.";}
+  }
+  btn.disabled=false; btn.textContent="Find it";
+  solveResult=apply;
+  out.innerHTML=html+(apply?' <button class="btn" type="button" id="btnApply" style="margin-left:6px">Use this</button>':"");
+  if(apply) document.getElementById("btnApply").onclick=applySolve;
+}
+function applySolve(){
+  const a=solveResult, d=active().data; if(!a) return;
+  if(a.spending!=null){d.house.spending=a.spending; d.house.spendingLater=a.spendingLater;}
+  if(a.retireAdd) d.people.forEach(p=>p.retireAge=n(p.retireAge)+a.retireAdd);
+  if(a.gov){d.people.forEach(p=>{p.cppStart=70; if(a.gov.includes("OAS")) p.oasStart=70;});}
+  active().example=false; save(); buildForm(); render();
+  document.getElementById("solveOut").textContent="Applied. Run the market histories to see the full picture.";
+}
+document.getElementById("btnSolve").onclick=runSolve;
+function pct(arr,p){const a=arr.slice().sort((x,y)=>x-y);return a[Math.min(a.length-1,Math.floor(p*(a.length-1)))];}
+function showMC(){
+  if(!mcData) return;
+  const {runs}=mcData, ok=runs.filter(x=>x.short===null).length, share=ok/runs.length;
+  const g=document.getElementById("mcGauge"); g.className="gauge "+(share>=.85?"good":share>=.7?"warn":"bad");
+  document.getElementById("mcPct").textContent=Math.round(share*100)+"%";
+  const shorts=runs.filter(x=>x.short!==null).map(x=>x.short);
+  const f=[["Median estate after tax",money(pct(runs.map(x=>x.estate),.5))],["Bad case estate (1 in 10)",money(pct(runs.map(x=>x.estate),.1))],
+    [shorts.length?"When it runs short, the typical year":"Runs short in",shorts.length?String(pct(shorts,.5)):"No history"]];
+  document.getElementById("mcFacts").innerHTML=f.map(x=>"<div><span class=\"num\">"+esc(x[1])+"</span><span>"+esc(x[0])+"</span></div>").join("");
+  document.getElementById("mcOut").hidden=false;
+  document.getElementById("mcNote").textContent=share>=.85?"Your plan holds up in most market histories.":share>=.7?"Your plan works in most histories but has little cushion. Lower spending, later retirement, or a later CPP start can raise this.":"Your plan depends on good markets. Consider lower spending, working longer, or delaying CPP and OAS.";
+  drawMC();
+}
+function drawMC(){
+  if(!mcData||document.getElementById("mcOut").hidden) return;
+  const cv=document.getElementById("mcChart"), bx=cv.parentElement, dpr=window.devicePixelRatio||1, W=bx.clientWidth, Ht=bx.clientHeight;
+  cv.width=W*dpr; cv.height=Ht*dpr; const c=cv.getContext("2d"); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,W,Ht);
+  const {runs,years,ages}=mcData, L=54,R=12,T=8,B=38,w=W-L-R,h=Ht-T-B, m=years.length;
+  const at=(k,p)=>pct(runs.map(x=>x.totals[k]||0),p);
+  const lo=years.map((_,k)=>at(k,.1)), med=years.map((_,k)=>at(k,.5)), hi=years.map((_,k)=>at(k,.9));
+  const ymax=niceMax(Math.max(...hi)*1.05), X=k=>L+(m===1?0:k*w/(m-1)), Y=v=>T+h-(v/ymax)*h;
+  c.font="11px "+css("--f-num"); c.fillStyle=css("--muted"); c.strokeStyle=css("--line");
+  for(let i=0;i<=4;i++){const v=ymax*i/4,y=Math.round(Y(v))+.5;c.beginPath();c.moveTo(L,y);c.lineTo(L+w,y);c.stroke();c.textAlign="right";c.textBaseline="middle";c.fillText(money(v),L-8,y);}
+  c.beginPath(); hi.forEach((v,k)=>k?c.lineTo(X(k),Y(v)):c.moveTo(X(k),Y(v))); for(let k=m-1;k>=0;k--)c.lineTo(X(k),Y(lo[k])); c.closePath();
+  c.fillStyle=css("--accent"); c.globalAlpha=.18; c.fill(); c.globalAlpha=1;
+  c.beginPath(); med.forEach((v,k)=>k?c.lineTo(X(k),Y(v)):c.moveTo(X(k),Y(v))); c.strokeStyle=css("--accent"); c.lineWidth=2; c.stroke(); c.lineWidth=1;
+  c.textAlign="center"; c.textBaseline="top"; c.fillStyle=css("--muted");
+  const step=Math.max(1,Math.ceil(m/(w/62)));
+  years.forEach((yr,k)=>{ if(k%step===0){c.fillText(String(yr),X(k),T+h+6);c.fillText("age "+ages[k],X(k),T+h+20);} });
+}
+document.getElementById("btnMC").onclick=runMC;
+new ResizeObserver(()=>drawMC()).observe(document.getElementById("mcChart").parentElement);
+let optHold=false;
+function staleOpt(){ if(!optHold&&typeof optPlans!=="undefined"&&optPlans&&!optRunning){ optPlans=null; document.getElementById("optOut").innerHTML=""; document.getElementById("optWhy").innerHTML=""; document.getElementById("optExplain").hidden=true; document.getElementById("optStatus").textContent="Your numbers changed. Run it again for updated plans."; } }
+function staleMC(){ staleOpt(); const so=document.getElementById("solveOut"); if(so&&so.querySelector("#btnApply")){so.textContent="";solveResult=null;} if(mcData){mcJob++; mcData=null; document.getElementById("mcOut").hidden=true; const b=document.getElementById("btnMC"); b.disabled=false; b.textContent="Run 500 market histories"; document.getElementById("mcNote").textContent="Your numbers changed. Run the market histories again to update.";} }
+
+/* backup */
+const bMsg=document.getElementById("backupMsg"), bText=document.getElementById("backupText");
+document.getElementById("btnBackup").onclick=()=>{
+  const txt=JSON.stringify({app:"run-the-numbers",version:1,saved:new Date().toISOString().slice(0,10),...store});
+  const fallback=()=>{bText.value=txt; bText.focus(); bText.select(); bMsg.textContent="Copying isn't allowed here. The backup is selected in the box above. Copy it and save it somewhere safe, like a note or email to yourself.";};
+  try{ navigator.clipboard.writeText(txt).then(()=>{bMsg.textContent="Backup copied. Paste it somewhere safe, like a note or an email to yourself.";},fallback);}catch(e){fallback();}
+};
+const rBtn=document.getElementById("btnRestore"); let rArm=null, rT;
+rBtn.onclick=()=>{
+  let s; try{s=JSON.parse(bText.value.trim());}catch(e){bMsg.textContent="That text isn't a backup from this calculator. Paste the whole backup, starting with { and ending with }."; return;}
+  if(!validStore(s)){bMsg.textContent="That backup is missing scenario data. Make sure you pasted the whole thing."; return;}
+  if(rArm!==bText.value){rArm=bText.value; rBtn.textContent="Click again to replace your "+store.scenarios.length+" scenario"+(store.scenarios.length>1?"s":""); clearTimeout(rT); rT=setTimeout(()=>{rArm=null;rBtn.textContent="Restore from backup";},4000); return;}
+  migrate(s); store={active:s.active,scenarios:s.scenarios}; save(); rArm=null; rBtn.textContent="Restore from backup"; bText.value="";
+  bMsg.textContent="Restored "+store.scenarios.length+" scenario"+(store.scenarios.length>1?"s":"")+".";
+  renderTabs(); buildForm(); render();
+};
+document.getElementById("finderTbl").addEventListener("click",e=>{const b=e.target.closest("button[data-t]"); if(!b)return;
+  active().data.assume.meltTarget=+b.dataset.t; active().example=false; save(); buildForm(); render(); runFinder();});
+document.getElementById("btnReset").onclick=()=>{const s=active(); s.data=clone(EXAMPLE); s.example=true; save(); buildForm(); render();};
+const del=document.getElementById("btnDelete"); let armT;
+del.onclick=()=>{
+  if(store.scenarios.length<2) return;
+  if(!del.classList.contains("armed")){del.classList.add("armed");del.textContent="Click again to delete";clearTimeout(armT);armT=setTimeout(()=>{del.classList.remove("armed");del.textContent="Delete scenario";},3000);return;}
+  store.scenarios=store.scenarios.filter(s=>s.id!==store.active); store.active=store.scenarios[0].id;
+  del.classList.remove("armed"); del.textContent="Delete scenario"; save(); renderTabs(); buildForm(); render();
+};
+document.getElementById("scenName").addEventListener("input",e=>{active().name=e.target.value||"Untitled";save();renderTabs();renderCompare();});
+
+let deb;
+document.querySelector(".inputs").addEventListener("input",e=>{
+  if(e.target.id==="scenName"||e.target.id==="backupText") return;
+  readForm(); active().example=false; document.getElementById("exampleNote").hidden=true;
+  clearTimeout(deb); deb=setTimeout(()=>{save();render();document.getElementById("finderWrap").hidden=true;},120);
+});
+document.querySelector(".inputs").addEventListener("change",e=>{ if(e.target.tagName==="SELECT"){readForm();active().example=false;save();render();document.getElementById("finderWrap").hidden=true;} });
+
+/* ---------- Ask about my plan (Claude) ---------- */
+const askEl={panel:document.getElementById("askPanel"),log:document.getElementById("askLog"),form:document.getElementById("askForm"),
+  box:document.getElementById("askBox"),send:document.getElementById("askSend"),stop:document.getElementById("askStop"),chips:document.getElementById("askChips")};
+let askTurns=[], askCtl=null, askSample=null, askTools=false, askPending=null;
+// Fields the assistant may test or propose, keyed by path
+function fieldIndex(d){
+  const idx={};
+  ppl(d).forEach((p,i)=>PEOPLE_FIELDS.forEach(f=>{ if(f[0]==="g"||f[0]==="name"||(isSingle(d)&&COUPLE_ONLY.has(f[0])))return; idx["people."+i+"."+f[0]]={label:(p.name||"Spouse "+(i+1))+": "+f[1],type:f[2]}; }));
+  HOUSE_FIELDS.forEach(f=>{ if(f[0]==="g"||(isSingle(d)&&COUPLE_ONLY.has(f[0])))return; idx["house."+f[0]]={label:f[1],type:f[2]}; });
+  ASSUME_FIELDS.forEach(f=>{ if(f[0]==="g"||(isSingle(d)&&COUPLE_ONLY.has(f[0])))return; idx["assume."+f[0]]={label:f[1],type:f[2]}; });
+  return idx;
+}
+function applyChanges(d,changes){
+  const idx=fieldIndex(d), done=[];
+  (Array.isArray(changes)?changes:[]).forEach(c=>{
+    const path=String(c&&c.field||""), f=idx[path]; if(!f) throw new Error("Unknown field: "+path+". Use a path from the field list.");
+    let v=c.value;
+    if(f.type==="prov"){v=String(v).toUpperCase(); if(!PROV[v]) throw new Error("Unknown province code "+v);}
+    else if(f.type==="yesno"){v=String(v)==="no"?"no":"yes";}
+    else if(f.type==="select"){v=String(v); if(!ORDERS.some(o=>o[0]===v)) throw new Error("Order must be one of: "+ORDERS.map(o=>o[0]).join(" | "));}
+    else{v=Number(v); if(!isFinite(v)||v<0) throw new Error(path+" needs a number of 0 or more");}
+    const [a,b,c2]=path.split("."); if(a==="people") d.people[+b][c2]=v; else d[a][b]=v;
+    done.push({path,label:f.label,value:v,type:f.type});
+  });
+  return done;
+}
+function outcome(d){
+  const r=simulate(d), end=r.rows[r.rows.length-1]||{};
+  return {moneyLastsWholePlan:r.firstShort===null, firstShortYear:r.firstShort===null?null:r.rows[r.firstShort].year,
+    estateAfterTax:Math.round(r.estate), lifetimeTaxIncludingClawback:Math.round(r.lifeTax), lifetimeOasClawback:Math.round(r.lifeClaw),
+    investmentsAtEnd:Math.round(end.total||0)};
+}
+function quickMC(d,N){
+  const r=realRet(d), vol=n(d.assume.volatility)/100, rand=rng(20261023);
+  const g=()=>{let u=0,v=0;while(!u)u=rand();while(!v)v=rand();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+  let ok=0; for(let i=0;i<N;i++){const rets=Array.from({length:80},()=>Math.max(-0.6,r+vol*g())); if(simulate(d,rets).firstShort===null) ok++;}
+  return Math.round(ok/N*100);
+}
+const fmtVal=(c)=>c.type==="$"?full(c.value):c.type==="%"?c.value+"%":c.type==="prov"?PROV[c.value].name:c.type==="select"?(ORDERS.find(o=>o[0]===c.value)||[,c.value])[1]:String(c.value);
+function planContext(){
+  const d=active().data, res=simulate(d), idx=fieldIndex(d);
+  const fields=Object.entries(idx).map(([path,f])=>{const [a,b,c]=path.split("."); const v=a==="people"?d.people[+b][c]:d[a][b]; return path+" = "+JSON.stringify(v)+"  ("+f.label+(f.type==="$"?", dollars":f.type==="%"?", percent":"")+")";}).join("\n");
+  const rows=res.rows.map(x=>[x.partial?x.year+"(part)":x.year,x.ages.map((a,i)=>x.alive[i]?a:"dead").join("/"),Math.round(x.work),Math.round(x.cpp),Math.round(x.oas),Math.round(x.pen),Math.round(x.rrifMin+x.melt+x.wd.rrsp),Math.round(x.tax),Math.round(x.claw),Math.round(x.spend+x.mortPay+x.evExp+x.ltc),Math.round(x.wd.tfsa+x.wd.nonreg+x.wd.cash),Math.round(x.short),Math.round(x.total),Math.round(x.homeEq)].join(",")).join("\n");
+  const events=(d.house.events||[]).map(e=>"- "+(e.label||"Event")+": "+e.kind+" $"+n(e.amount)+" at age "+e.age+(n(e.every)?" every "+e.every+" yrs until "+e.until:"")).join("\n")||"none";
+  return "HOUSEHOLD: "+(isSingle(d)?"single person ("+d.people[0].name+")":"couple ("+d.people.map(p=>p.name).join(" and ")+")")+"\nPLAN: "+active().name+(active().example?" (these are the app's EXAMPLE figures, not the user's own)":"")+"\nCurrent date: "+TODAY.toISOString().slice(0,10)+"\n\nINPUT FIELDS (path = value):\n"+fields+
+    "\n\nEVENTS (timed by "+(d.people[0].name)+"'s age):\n"+events+
+    "\n\nRESULTS: "+JSON.stringify(outcome(d))+(mcData?"\nMarket histories already run: money lasts in "+Math.round(okShare(mcData.runs)*100)+"% of 500.":"")+
+    "\n\nYEAR BY YEAR (today's dollars): year,ages,salary,CPP,OAS,pension,RRSP-RRIF withdrawals,income tax,OAS clawback,total spending incl mortgage/events/care,other withdrawals,shortfall,investments at year end,home equity\n"+rows;
+}
+const ASK_RULES=`You are the assistant built into "Run The Numbers", a Canadian retirement calculator for single people and couples. Answer the user's question about THEIR plan using the plan data provided. All amounts are in today's dollars.
+How the model works: 2026 federal and provincial tax brackets and credits held constant in real terms; CPP/OAS timing adjustments; OAS clawback; RRIF minimums from 72; optional pension splitting and CPP sharing (couples); an RRSP drawdown target (draw RRSP up to a taxable income per person after retiring, through a chosen age); survivor rollovers and CPP survivor benefits when the first spouse dies; withdrawals follow the chosen order. Not modelled: tax on non-registered gains, GIS, medical expense credit.
+Style: plain language, short paragraphs, under about 180 words unless asked for more. Lead with the direct answer. Quote specific numbers and years from the plan. Explain any term the user may not know in a few words. Simple markdown only (**bold**, "- " bullets).
+Tools: before recommending a change, test it with run_what_if (deterministic) and, for risk questions, run_market_test. You can test several options. If a change clearly helps, call propose_change ONCE with your best option so the user can apply it with a click; never say a change has been applied. Only use field paths from the INPUT FIELDS list.
+Limits: you are not a licensed financial advisor; for major decisions, suggest confirming with a fee-only planner (once, briefly). Never invent figures that are not in the data or tool results. If the question isn't about retirement planning, say briefly that you can only help with this plan.`;
+const ASK_TOOLS=[
+  {name:"run_what_if",description:"Recalculate the plan with some fields changed (not saved) and return the steady-return outcome: whether money lasts, first short year, estate after tax, lifetime tax and OAS clawback. Returns the current plan's outcome too for comparison.",
+   inputSchema:{type:"object",properties:{changes:{type:"array",items:{type:"object",properties:{field:{type:"string"},value:{}},required:["field","value"]}}},required:["changes"]},
+   execute:(input)=>{const d=clone(active().data); const done=applyChanges(d,input.changes); askStatus("Testing "+done.map(c=>c.label+" → "+fmtVal(c)).join(", ")); return {changed:done.map(c=>c.path+"="+c.value),withChanges:outcome(d),current:outcome(active().data)};}},
+  {name:"run_market_test",description:"Run 200 randomized market histories (same seed every time, so results are comparable) on the plan with optional changes; returns the percent of histories where the money lasts, for both the changed and current plan. Takes a few seconds.",
+   inputSchema:{type:"object",properties:{changes:{type:"array",items:{type:"object",properties:{field:{type:"string"},value:{}},required:["field","value"]}}}},
+   execute:(input)=>{const d=clone(active().data); const done=applyChanges(d,input.changes||[]); askStatus("Running market histories"+(done.length?" with "+done.map(c=>c.label+" → "+fmtVal(c)).join(", "):"")+"…"); return {successPercentWithChanges:quickMC(d,200),successPercentCurrent:quickMC(clone(active().data),200)};}},
+  {name:"propose_change",description:"Show the user a card with a suggested change and an Apply button. Use once per answer for your best tested option. The change is only applied if the user clicks Apply.",
+   inputSchema:{type:"object",properties:{title:{type:"string",description:"Short name, e.g. 'Delay CPP to 70'"},changes:{type:"array",items:{type:"object",properties:{field:{type:"string"},value:{}},required:["field","value"]}}},required:["title","changes"]},
+   execute:(input)=>{const d=clone(active().data); const done=applyChanges(d,input.changes); askPending={title:String(input.title||"Suggested change").slice(0,80),changes:done,scen:store.active}; return "Shown to the user with an Apply button. They decide.";}}
+];
+function mdLite(t){
+  const lines=esc(t).split("\n"); let html="", inList=false;
+  lines.forEach(l=>{const b=l.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+    if(/^\s*[-•]\s+/.test(l)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+b.replace(/^\s*[-•]\s+/,"")+"</li>"; }
+    else{ if(inList){html+="</ul>";inList=false;} if(l.trim()) html+="<p>"+b+"</p>"; } });
+  return html+(inList?"</ul>":"");
+}
+function addMsg(role,html){const m=document.createElement("div"); m.className="msg "+role; m.innerHTML=html; askEl.log.appendChild(m); askEl.log.scrollTop=askEl.log.scrollHeight; return m;}
+let statusEl=null; function askStatus(t){ if(statusEl){statusEl.textContent=t; statusEl.hidden=false;} }
+const ASK_ERR={not_granted:"Claude isn't allowed on this page. You can turn it on from the page's permissions.",sampling_disabled:"Claude isn't available on this account.",rate_limited:"Too many questions at once, or you've reached a usage limit. Try again in a bit.",session_expired:"Please sign in to Claude again, then ask.",refused:"Claude couldn't answer that. Try asking it differently.",empty_completion:"No answer came back. Try a simpler question.",prompt_too_large:"Your plan is too large to send. Remove some events and try again."};
+async function ask(q){
+  if(!askSample||!q.trim()) return;
+  askEl.chips.hidden=true;
+  addMsg("user",esc(q));
+  askTurns.push({role:"user",content:q});
+  const bot=addMsg("bot",'<span class="thinking">Thinking…</span>');
+  statusEl=document.createElement("div"); statusEl.className="tool-status"; statusEl.hidden=true; bot.before(statusEl);
+  askCtl=new AbortController(); askEl.send.hidden=true; askEl.stop.hidden=false; askEl.box.disabled=true; askPending=null;
+  const input=[{role:"user",content:ASK_RULES+"\n\n"+planContext()+"\n\nThe user's conversation follows."},...askTurns.slice(-10)];
+  try{
+    const opts={signal:askCtl.signal,cache:false,onText:({text})=>{bot.innerHTML=mdLite(text); askEl.log.scrollTop=askEl.log.scrollHeight;}};
+    if(askTools){opts.tools=ASK_TOOLS; delete opts.cache;}
+    const {text,truncated}=await askSample(input,opts);
+    bot.innerHTML=mdLite(text)+(truncated?'<p class="muted">The answer was cut short. Ask a narrower question for more.</p>':"");
+    askTurns.push({role:"assistant",content:text});
+  }catch(e){
+    if(e.text) bot.innerHTML=mdLite(e.text); else bot.innerHTML="";
+    if(e.code!=="cancelled") addMsg("note",esc(ASK_ERR[e.code]||"Something went wrong reaching Claude. Try again."));
+    if(e.code==="not_granted"||e.code==="sampling_disabled"){askEl.form.hidden=true;}
+    if(e.text) askTurns.push({role:"assistant",content:e.text}); else askTurns.pop();
+    if(!bot.innerHTML) bot.remove();
+  }finally{
+    if(statusEl) statusEl.remove(); statusEl=null;
+    askEl.send.hidden=false; askEl.stop.hidden=true; askEl.box.disabled=false; askEl.box.focus();
+    if(askPending) showProposal(askPending);
+  }
+}
+function showProposal(pr){
+  const card=document.createElement("div"); card.className="proposal";
+  card.innerHTML="<b>"+esc(pr.title)+"</b><ul>"+pr.changes.map(c=>"<li>"+esc(c.label)+": <span class=\"num\">"+esc(fmtVal(c))+"</span></li>").join("")+"</ul>";
+  const row=document.createElement("div"); row.className="actions";
+  const ap=document.createElement("button"); ap.type="button"; ap.className="btn primary"; ap.textContent="Apply to "+(store.scenarios.find(s=>s.id===pr.scen)||active()).name;
+  const cp=document.createElement("button"); cp.type="button"; cp.className="btn"; cp.textContent="Try as a new scenario";
+  const no=document.createElement("button"); no.type="button"; no.className="btn"; no.textContent="Dismiss";
+  ap.onclick=()=>{ store.active=pr.scen; applyChanges(active().data,pr.changes.map(c=>({field:c.path,value:c.value}))); active().example=false; save(); renderTabs(); buildForm(); render(); card.innerHTML="<span class=\"muted\">Applied: "+esc(pr.title)+".</span>"; };
+  cp.onclick=()=>{ const src=store.scenarios.find(s=>s.id===pr.scen)||active(), id="s"+Date.now(), dd=clone(src.data);
+    applyChanges(dd,pr.changes.map(c=>({field:c.path,value:c.value}))); store.scenarios.push({id,name:pr.title.slice(0,40),example:false,data:dd}); store.active=id; save(); renderTabs(); buildForm(); render();
+    card.innerHTML="<span class=\"muted\">Saved as a new scenario: "+esc(pr.title)+". Your original plan is unchanged.</span>"; };
+  no.onclick=()=>card.remove();
+  row.append(ap,cp,no); card.appendChild(row); askEl.log.appendChild(card); askEl.log.scrollTop=askEl.log.scrollHeight;
+}
+askEl.form.addEventListener("submit",e=>{e.preventDefault(); const q=askEl.box.value; askEl.box.value=""; ask(q);});
+askEl.box.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault(); askEl.form.requestSubmit();} });
+askEl.stop.onclick=()=>askCtl&&askCtl.abort();
+askEl.chips.addEventListener("click",e=>{const b=e.target.closest("button"); if(b) ask(b.textContent);});
+document.getElementById("askClear").onclick=()=>{ if(askCtl) askCtl.abort(); askTurns=[]; askEl.log.innerHTML=""; askEl.chips.hidden=false; };
+(async()=>{
+  try{ askSample=await window.claude?.use("sample"); }catch(e){ askSample=null; }
+  if(!askSample) return;
+  try{ const lim=await askSample.limits(); askTools=!!(lim&&lim.tools); }catch(e){ askTools=false; }
+  askEl.panel.hidden=false;
+})();
+
+/* ---------- plan optimizer ---------- */
+const OPT_GOALS={spend:"Spend the most",retire:"Retire earliest",estate:"Leave the most",tax:"Pay the least tax"};
+const optEl={goal:document.getElementById("optGoal"),target:document.getElementById("optTarget"),btn:document.getElementById("btnOpt"),
+  out:document.getElementById("optOut"),status:document.getElementById("optStatus"),explain:document.getElementById("optExplain"),why:document.getElementById("optWhy")};
+let optPlans=null, optMeta=null, optRunning=false;
+function combos(){const out=[]; for(const cpp of [65,67,70]) for(const oas of [65,70]) for(const melt of [0,40000,55000,70000]) for(const order of ORDERS.map(o=>o[0])) out.push({cpp,oas,melt,order}); return out;}
+function withCombo(d,c,extra){const x=clone(d); x.people.forEach(p=>{p.cppStart=c.cpp;p.oasStart=c.oas;}); x.assume.meltTarget=c.melt; x.assume.meltEnd=x.assume.meltEnd||71; x.assume.order=c.order; x.assume.split="yes"; if(extra) extra(x); return x;}
+const tick=()=>new Promise(r=>setTimeout(r,0));
+// Keep finalists varied: at most one per CPP/OAS timing pair
+function distinct(list,k){const seen=new Set(), out=[]; for(const x of list){const key=x.c.cpp+"/"+x.c.oas; if(seen.has(key))continue; seen.add(key); out.push(x); if(out.length>=k)break;} return out;}
+async function pctOK(d,N,job){const runs=await mcRun(d,N,job); if(!runs) throw "stopped"; return okShare(runs);}
+function optStatus(t){optEl.status.textContent=t;}
+async function runOptimizer(){
+  if(optRunning) return; optRunning=true;
+  const goal=optEl.goal.value, target=clamp(n(optEl.target.value),50,99)/100, d0=clone(active().data), job=++mcJob, CS=combos();
+  optEl.btn.disabled=true; optEl.out.innerHTML=""; optEl.why.innerHTML=""; optEl.explain.hidden=true; optPlans=null;
+  const N=150, plans=[];
+  try{
+    optStatus("Checking your current plan…");
+    const curPct=await pctOK(d0,N,job), curRes=simulate(d0);
+    const screen=async(extra,label)=>{const out=[]; for(let i=0;i<CS.length;i++){const x=withCombo(d0,CS[i],extra), r=simulate(x); out.push({c:CS[i],d:x,lasts:r.firstShort===null,estate:r.estate,tax:r.lifeTax}); if(i%12===11){optStatus(label+" "+Math.round(i/CS.length*100)+"%"); await tick();}} return out;};
+    if(goal==="estate"||goal==="tax"){
+      const sc=await screen(null,"Screening "+CS.length+" combinations…");
+      sc.sort((a,b)=>(b.lasts-a.lasts)||(goal==="estate"?b.estate-a.estate:a.tax-b.tax));
+      const top=distinct(sc,6);
+      for(let i=0;i<top.length;i++){optStatus("Testing finalists against market histories ("+(i+1)+" of "+top.length+")…"); top[i].pct=await pctOK(top[i].d,N,job);}
+      const ok=top.filter(p=>p.pct>=target), pool=ok.length?ok:top.slice().sort((a,b)=>b.pct-a.pct);
+      if(ok.length) pool.sort((a,b)=>goal==="estate"?b.estate-a.estate:a.tax-b.tax);
+      pool.slice(0,3).forEach(p=>plans.push({c:p.c,d:p.d,pct:p.pct,estate:p.estate,tax:p.tax,meets:p.pct>=target}));
+    } else if(goal==="spend"){
+      const base=n(d0.house.spending), later=n(d0.house.spendingLater);
+      const scaleFn=k=>x=>{x.house.spending=base*k; x.house.spendingLater=later*k;};
+      const det=[];
+      for(let i=0;i<CS.length;i++){
+        let lo=0.4,hi=2.5; for(let it=0;it<9;it++){const m=(lo+hi)/2; (simulate(withCombo(d0,CS[i],scaleFn(m))).firstShort===null)?lo=m:hi=m;}
+        det.push({c:CS[i],k:lo}); if(i%6===5){optStatus("Screening "+CS.length+" combinations… "+Math.round(i/CS.length*100)+"%"); await tick();}
+      }
+      det.sort((a,b)=>b.k-a.k);
+      const top=distinct(det,3);
+      for(let i=0;i<top.length;i++){
+        let lo=0.3,hi=top[i].k;
+        for(let it=0;it<6;it++){optStatus("Finding the safe spending level for finalist "+(i+1)+" of 3 (step "+(it+1)+" of 6)…"); const m=(lo+hi)/2; (await pctOK(withCombo(d0,top[i].c,scaleFn(m)),120,job)>=target)?lo=m:hi=m;}
+        const k=Math.floor(base*lo/500)*500/(base||1), x=withCombo(d0,top[i].c,scaleFn(k)), r=simulate(x);
+        plans.push({c:top[i].c,d:x,pct:await pctOK(x,N,job),estate:r.estate,tax:r.lifeTax,spend:base*k,spendLater:later*k,meets:true});
+      }
+      plans.sort((a,b)=>b.spend-a.spend);
+    } else {
+      const minShift=Math.max(-8,...ppl(d0).map(p=>50-n(p.retireAge)));
+      let found=null;
+      for(let s=minShift;s<=5&&!found;s++){
+        const shift=x=>x.people.forEach(p=>p.retireAge=n(p.retireAge)+s);
+        const sc=await screen(shift,"Trying retirement "+(s<0?-s+" years earlier":s>0?s+" years later":"at your current ages")+"…");
+        sc.sort((a,b)=>(b.lasts-a.lasts)||b.estate-a.estate);
+        if(!sc[0].lasts) continue;
+        for(const p of sc.slice(0,2)){p.pct=await pctOK(p.d,N,job); if(p.pct>=target){found=s; plans.push({c:p.c,d:p.d,pct:p.pct,estate:p.estate,tax:p.tax,shift:s,meets:true});}}
+        if(found!==null){ const s2=s+1; if(s2<=5){const sh2=x=>x.people.forEach(p=>p.retireAge=n(p.retireAge)+s2); const b=(await screen(sh2,"Checking one more year for cushion…")).sort((a,b)=>(b.lasts-a.lasts)||b.estate-a.estate)[0]; b.pct=await pctOK(b.d,N,job); plans.push({c:b.c,d:b.d,pct:b.pct,estate:b.estate,tax:b.tax,shift:s2,meets:b.pct>=target});} }
+      }
+      if(found===null) optStatus("");
+    }
+    optMeta={goal,target,curPct,curEstate:curRes.estate,curTax:curRes.lifeTax,base:d0};
+    optPlans=plans.slice(0,3);
+    renderOpt();
+  }catch(e){ if(e!=="stopped") throw e; optStatus("Stopped because the numbers changed. Run it again."); }
+  finally{ optRunning=false; optEl.btn.disabled=false; }
+}
+function describeCombo(p,d0){
+  const items=[]; const p0=d0.people[0], a0=d0.assume;
+  const lab=o=>(ORDERS.find(x=>x[0]===o)||[,o])[1];
+  if(p.shift!=null) items.push(p.shift===0?"Retire at your current age"+(isSingle(d0)?"":"s"):"Retire "+Math.abs(p.shift)+" year"+(Math.abs(p.shift)>1?"s":"")+" "+(p.shift<0?"earlier":"later")+" ("+ppl(d0).map(q=>q.name+" "+(n(q.retireAge)+p.shift)).join(", ")+")");
+  if(p.spend!=null) items.push("Spend "+full(p.spend)+" a year"+(n(d0.house.spendingChangeAge)>0?", then "+full(p.spendLater):""));
+  items.push("CPP at "+p.c.cpp+(p0.cppStart==p.c.cpp?" (as now)":""));
+  items.push("OAS at "+p.c.oas+(p0.oasStart==p.c.oas?" (as now)":""));
+  items.push(p.c.melt?"Draw RRSP up to "+full(p.c.melt)+" a year each after retiring":"No extra RRSP drawdown");
+  items.push("Withdraw "+lab(p.c.order)+(a0.order===p.c.order?" (as now)":""));
+  return items;
+}
+function renderOpt(){
+  const m=optMeta, out=optEl.out; out.innerHTML="";
+  const goalName=OPT_GOALS[m.goal].toLowerCase();
+  optStatus("Your current plan: money lasts in "+Math.round(m.curPct*100)+"% of market histories, "+money(m.curEstate)+" estate after tax.");
+  if(optPlans.length&&!optPlans.some(p=>p.meets)) optEl.status.textContent+=" None of the combinations reach your target, so these are the closest. Try the \"Spend the most\" goal to see what spending would get you there.";
+  if(!optPlans.length){out.innerHTML='<p class="note">No combination reached '+Math.round(m.target*100)+'%. Try a lower target, or lower spending first.</p>'; return;}
+  optPlans.forEach((p,i)=>{
+    const card=document.createElement("div"); card.className="opt-card"+(i===0?" best":"");
+    const pc=Math.round(p.pct*100), cls=p.pct>=.85?"ok":p.pct>=.7?"warn":"short";
+    card.innerHTML='<div class="opt-head"><b>'+(i===0?"Best plan":"Option "+String.fromCharCode(65+i))+'</b><span class="pill '+cls+'">'+pc+'% lasts</span></div>'+
+      '<ul>'+describeCombo(p,m.base).map(t=>"<li>"+esc(t)+"</li>").join("")+'</ul>'+
+      '<div class="opt-metrics num"><span>Estate after tax <b>'+esc(money(p.estate))+'</b></span><span>Lifetime tax <b>'+esc(money(p.tax))+'</b></span></div>'+
+      (p.meets?"":'<p class="note" style="margin:4px 0 0">Doesn\'t reach your '+Math.round(m.target*100)+'% target, but it\'s the closest found.</p>');
+    const row=document.createElement("div"); row.className="actions"; row.style.marginTop="8px";
+    const ap=document.createElement("button"); ap.type="button"; ap.className="btn"+(i===0?" primary":""); ap.textContent="Apply";
+    const sv=document.createElement("button"); sv.type="button"; sv.className="btn"; sv.textContent="Save as scenario";
+    ap.onclick=()=>{ active().data=clone(p.d); active().example=false; save(); optHold=true; buildForm(); render(); optHold=false; card.querySelector(".actions").innerHTML='<span class="muted">Applied to '+esc(active().name)+'.</span>'; };
+    sv.onclick=()=>{ const id="s"+Date.now(); store.scenarios.push({id,name:(i===0?"Best: ":"")+OPT_GOALS[m.goal],example:false,data:clone(p.d)}); store.active=id; save(); optHold=true; renderTabs(); buildForm(); render(); optHold=false; sv.replaceWith(Object.assign(document.createElement("span"),{className:"muted",textContent:"Saved as a new scenario."})); };
+    row.append(ap,sv); card.appendChild(row); out.appendChild(card);
+  });
+  optEl.explain.hidden=!askSample;
+}
+async function explainOpt(){
+  if(!askSample||!optPlans) return;
+  const m=optMeta; optEl.explain.disabled=true; optEl.why.innerHTML='<span class="thinking">Thinking…</span>';
+  const d0=m.base, names=ppl(d0).map(p=>p.name).join(" and ");
+  const summary=optPlans.map((p,i)=>(i===0?"Best plan":"Option "+String.fromCharCode(65+i))+": "+describeCombo(p,d0).join("; ")+". Money lasts in "+Math.round(p.pct*100)+"% of market histories. Estate after tax "+full(p.estate)+". Lifetime tax "+full(p.tax)+".").join("\n");
+  const prompt="You explain retirement plan options inside a Canadian retirement calculator. "+(isSingle(d0)?"The person is "+names:"The couple is "+names)+", living in "+PROV[d0.house.province||"BC"].name+". Their goal: "+OPT_GOALS[m.goal]+", while the money lasts in at least "+Math.round(m.target*100)+"% of randomized market histories.\n"+
+    "Current plan: money lasts in "+Math.round(m.curPct*100)+"% of histories, estate after tax "+full(m.curEstate)+", lifetime tax "+full(m.curTax)+". Current CPP start "+ppl(d0).map(p=>p.cppStart).join("/")+", OAS start "+ppl(d0).map(p=>p.oasStart).join("/")+", retirement ages "+ppl(d0).map(p=>p.retireAge).join("/")+", spending "+full(n(d0.house.spending))+".\n"+
+    "Options found by the optimizer (all amounts in today's dollars):\n"+summary+"\n\n"+
+    "In under 170 words, plain language: say which option fits their goal and why, what they give up compared with the others, and briefly explain why the key levers (for example delaying CPP/OAS or drawing the RRSP early) help. Use the numbers above only; don't invent figures. Use **bold** sparingly and '- ' bullets if helpful. End with one sentence suggesting they confirm major decisions with a fee-only planner.";
+  try{ const {text}=await askSample(prompt,{onText:({text})=>{optEl.why.innerHTML=mdLite(text);}}); optEl.why.innerHTML=mdLite(text); }
+  catch(e){ optEl.why.innerHTML=e.text?mdLite(e.text):""; if(e.code!=="cancelled") optEl.why.insertAdjacentHTML("beforeend",'<p class="note">'+esc(ASK_ERR[e.code]||"Couldn't reach Claude. Try again.")+'</p>'); }
+  finally{ optEl.explain.disabled=false; }
+}
+optEl.btn.onclick=runOptimizer;
+optEl.explain.onclick=explainOpt;
+
+/* ---------- PDF report ---------- */
+let dlCap=null;
+const loadScript=src=>new Promise((res,rej)=>{ if(document.querySelector('script[src="'+src+'"]')) return res(); const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=()=>rej(new Error("load")); document.head.appendChild(s); });
+const pdfTxt=t=>String(t).replace(/→/g,">").replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/…/g,"...").replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF–—]/g,"");
+// Chart drawn with a fixed light palette so it prints the same in any theme
+function chartImage(rows,d,W,H){
+  const c=document.createElement("canvas"); c.width=W*2; c.height=H*2; const g=c.getContext("2d"); g.scale(2,2);
+  g.fillStyle="#ffffff"; g.fillRect(0,0,W,H);
+  const L=62,R=12,T=12,B=40,w=W-L-R,h=H-T-B, keys=["rrsp","tfsa","nonreg","cash"], col={rrsp:"#3166a8",tfsa:"#1f8f6c",nonreg:"#c48a2a",cash:"#8679b6"};
+  const ymax=niceMax(Math.max(1,...rows.map(r=>r.total))*1.05), X=i=>L+(rows.length===1?0:i*w/(rows.length-1)), Y=v=>T+h-(v/ymax)*h;
+  g.font="11px Helvetica, Arial, sans-serif"; g.strokeStyle="#dbe2df"; g.fillStyle="#5a6a65"; g.lineWidth=1;
+  for(let i=0;i<=4;i++){const v=ymax*i/4,y=Math.round(Y(v))+.5; g.beginPath(); g.moveTo(L,y); g.lineTo(L+w,y); g.stroke(); g.textAlign="right"; g.textBaseline="middle"; g.fillText(money(v),L-8,y);}
+  let base=rows.map(()=>0);
+  keys.forEach(k=>{const top=rows.map((r,i)=>base[i]+Math.max(0,r.bal[k])); g.beginPath(); rows.forEach((r,i)=>i?g.lineTo(X(i),Y(top[i])):g.moveTo(X(i),Y(top[i]))); for(let i=rows.length-1;i>=0;i--) g.lineTo(X(i),Y(base[i])); g.closePath(); g.fillStyle=col[k]; g.globalAlpha=.85; g.fill(); g.globalAlpha=1; base=top;});
+  g.fillStyle="#5a6a65"; g.textAlign="center"; g.textBaseline="top"; const step=Math.max(1,Math.ceil(rows.length/9));
+  rows.forEach((r,i)=>{ if(i%step===0){g.fillText(String(r.year),X(i),T+h+6); g.fillText("age "+r.ages[0],X(i),T+h+20);} });
+  g.setLineDash([4,4]); g.strokeStyle="#16201d"; g.globalAlpha=.4;
+  ppl(d).forEach(p=>{const i=rows.findIndex(r=>r.year===n(p.birthYear)+n(p.retireAge)); if(i>0){g.beginPath(); g.moveTo(X(i)+.5,T); g.lineTo(X(i)+.5,T+h); g.stroke();}});
+  g.setLineDash([]); g.globalAlpha=1;
+  return c.toDataURL("image/png");
+}
+async function makeReport(){
+  const btn=document.getElementById("btnReport"), msg=document.getElementById("reportMsg");
+  btn.disabled=true; const label=btn.textContent; btn.textContent="Building report…"; msg.textContent="";
+  try{
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js");
+    const {jsPDF}=window.jspdf, s=active(), d=s.data, res=simulate(d), rows=res.rows, P=ppl(d), names=P.map(p=>p.name);
+    const doc=new jsPDF({unit:"pt",format:"letter"}), PW=doc.internal.pageSize.getWidth(), M=48; let y=M;
+    const ink=[22,32,29], mute=[90,106,101], acc=[28,106,84];
+    const para=(t,size=10,color=ink,gap=4)=>{doc.setFont("helvetica","normal"); doc.setFontSize(size); doc.setTextColor(...color); const ls=doc.splitTextToSize(pdfTxt(t),PW-2*M); if(y+ls.length*size*1.3>760){doc.addPage(); y=M;} doc.text(ls,M,y); y+=ls.length*size*1.3+gap;};
+    const head=t=>{if(y>700){doc.addPage(); y=M;} doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(...acc); doc.text(pdfTxt(t),M,y); y+=18;};
+    const today=TODAY.toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"});
+    // title
+    doc.setFont("helvetica","bold"); doc.setFontSize(20); doc.setTextColor(...ink); doc.text("Retirement plan summary",M,y); y+=22;
+    para((isSingle(d)?names[0]:names.join(" and "))+" - "+PROV[d.house.province||"BC"].name+" - plan \""+s.name+"\"",11,mute,2);
+    para("Prepared "+today+" with Run The Numbers. All amounts are in today's dollars"+(s.example?". NOTE: these are the calculator's example figures, not real ones.":"."),9,mute,12);
+    // verdict
+    const ok=res.firstShort===null;
+    doc.setFillColor(...(ok?[223,240,230]:[246,227,223])); const vb=pdfTxt(document.getElementById("vBig").textContent), vt=doc.splitTextToSize(pdfTxt(document.getElementById("vText").textContent),PW-2*M-24);
+    const bh=40+vt.length*13; doc.roundedRect(M,y,PW-2*M,bh,6,6,"F");
+    doc.setFont("helvetica","bold"); doc.setFontSize(15); doc.setTextColor(...(ok?[29,122,82]:[176,65,44])); doc.text(vb,M+12,y+22);
+    doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(...ink); doc.text(vt,M+12,y+38); y+=bh+14;
+    head("Key points");
+    takeaways(d,res).forEach(x=>para(x.k+". "+x.t.replace(/ Try “Find my best plan”.*$/,"").replace(/ “Find my best plan” can test combinations\.$/,""),10,ink,5));
+    y+=4; head("Key numbers");
+    const retYear=retYearOf(d), rr=rows.find(x=>x.year===retYear-1)||rows[0];
+    const r0=realRet(d), k0=clamp(retYear-START_YEAR,0,Math.max(0,rows.length-1)), rets=Array(80).fill(r0); rets[k0]=-0.25; const st=simulate(d,rets);
+    btn.textContent="Running market histories…"; await tick();
+    const mcPct=mcData?Math.round(okShare(mcData.runs)*100)+"% of 500":quickMC(d,200)+"% of 200";
+    doc.autoTable({startY:y,margin:{left:M,right:M},theme:"plain",styles:{fontSize:10,cellPadding:4,textColor:ink},columnStyles:{1:{halign:"right",fontStyle:"bold"}},
+      body:[["Investments when "+bothPhrase(d),money(rr.total)],["Lifetime income tax incl. OAS clawback",money(res.lifeTax)],["OAS clawback over the plan",money(res.lifeClaw)],
+        ["Estate after tax at end of plan (incl. home)",money(res.estate)],["Market histories where the money lasts",mcPct],
+        ["If markets fall 25% in "+(START_YEAR+k0),st.firstShort===null?"Still lasts":"Runs short in "+st.rows[st.firstShort].year]].map(r=>r.map(pdfTxt))});
+    y=doc.lastAutoTable.finalY+14;
+    head("Investments over time");
+    const img=chartImage(rows,d,640,260); if(y+220>760){doc.addPage(); y=M;} doc.addImage(img,"PNG",M,y,PW-2*M,(PW-2*M)*260/640); y+=(PW-2*M)*260/640+6;
+    para("Blue: RRSP/RRIF. Green: TFSA. Gold: non-registered. Purple: cash. Dashed lines: retirement. Home equity not shown.",8,mute,10);
+    // inputs
+    doc.addPage(); y=M; head("Plan inputs");
+    const val=(type,v)=>type==="$"?full(n(v)):type==="%"?n(v)+"%":type==="yesno"?(v==="no"?"No":"Yes"):type==="select"?(ORDERS.find(o=>o[0]===v)||[,v])[1]:type==="prov"?PROV[v||"BC"].name:String(v??"");
+    const pr=PEOPLE_FIELDS.filter(f=>f[0]!=="g"&&f[0]!=="name"&&!(isSingle(d)&&COUPLE_ONLY.has(f[0]))).map(f=>[f[1],...P.map(p=>val(f[2],p[f[0]]))]);
+    doc.autoTable({startY:y,margin:{left:M,right:M},head:[["",...names]],body:pr.map(r=>r.map(pdfTxt)),theme:"striped",styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:acc},columnStyles:{1:{halign:"right"},2:{halign:"right"}}});
+    y=doc.lastAutoTable.finalY+14;
+    const hr=[...HOUSE_FIELDS,...ASSUME_FIELDS].filter(f=>f[0]!=="g"&&!(isSingle(d)&&COUPLE_ONLY.has(f[0]))).map(f=>[f[1],val(f[2],(HOUSE_FIELDS.includes(f)?d.house:d.assume)[f[0]])]);
+    doc.autoTable({startY:y,margin:{left:M,right:M},head:[["Household and assumptions",""]],body:hr.map(r=>r.map(pdfTxt)),theme:"striped",styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:acc},columnStyles:{1:{halign:"right"}}});
+    y=doc.lastAutoTable.finalY+14;
+    if((d.house.events||[]).length){
+      doc.autoTable({startY:y,margin:{left:M,right:M},head:[["Big expenses and windfalls","Type","Amount","When"]],theme:"striped",styles:{fontSize:9,cellPadding:3},headStyles:{fillColor:acc},
+        body:d.house.events.map(e=>[e.label||"Event",e.kind==="expense"?"Expense":e.kind==="free"?"Tax-free in":"Taxable income",full(n(e.amount)),"Age "+e.age+(n(e.every)?", every "+e.every+" yrs to "+e.until:"")].map(pdfTxt))});
+      y=doc.lastAutoTable.finalY+14;
+    }
+    // year by year
+    doc.addPage("letter","landscape"); y=M; head("Year by year (today's dollars)");
+    doc.autoTable({startY:y,margin:{left:M-14,right:M-14},theme:"striped",styles:{fontSize:7.5,cellPadding:2.5,halign:"right"},headStyles:{fillColor:acc,halign:"right"},columnStyles:{0:{halign:"left"},1:{halign:"left"}},
+      head:[["Year","Ages","Work pay","CPP","OAS","Pension","RRSP/RRIF out","TFSA/other out","Tax + clawback","Spending*","Shortfall","Investments","Home equity"]],
+      body:rows.map(x=>[x.partial?x.year+" (rest)":x.year,x.ages.map((a,i)=>x.alive[i]?a:"-").join("/"),full(x.work),full(x.cpp),full(x.oas),full(x.pen),full(x.rrifMin+x.melt+x.wd.rrsp),full(x.wd.tfsa+x.wd.nonreg+x.wd.cash),full(x.tax+x.claw),full(x.spend+x.mortPay+x.evExp+x.ltc),full(x.short),full(x.total),full(x.homeEq)].map(c=>pdfTxt(String(c))))});
+    y=doc.lastAutoTable.finalY+10;
+    para("* Spending includes mortgage payments, big expenses and care costs.",8,mute,10);
+    head("How this projection works");
+    ["Taxes use 2026 federal and provincial brackets and credits, held constant in today's dollars, including the age, pension and Canada employment credits, OAS clawback, pension splitting"+(d.assume.cppShare==="yes"?", CPP sharing":"")+" and RRIF minimums.",
+     "CPP and OAS are adjusted for the chosen start ages. When a spouse dies, registered accounts roll to the survivor, OAS stops and the CPP survivor's pension is added.",
+     "Investment return "+n(d.assume.returnRate)+"%, inflation "+n(d.assume.inflation)+"%, volatility "+n(d.assume.volatility)+"%. Market histories replay the plan with randomized returns.",
+     "Not modelled: tax on non-registered growth, GIS, low-income provincial tax reductions outside BC, and Quebec's health contribution.",
+     "This is an educational projection, not financial advice. Please review it with a qualified, fee-only financial planner."].forEach(t=>para("- "+t,9,ink,3));
+    const pages=doc.getNumberOfPages();
+    for(let i=1;i<=pages;i++){doc.setPage(i); const pw=doc.internal.pageSize.getWidth(), ph=doc.internal.pageSize.getHeight(); doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...mute);
+      doc.text(pdfTxt("Run The Numbers - "+s.name+" - "+today),M-14,ph-24); doc.text("Page "+i+" of "+pages,pw-M+14,ph-24,{align:"right"});}
+    const blob=doc.output("blob");
+    btn.textContent="Saving…";
+    const fname=pdfTxt("Retirement plan - "+s.name+" - "+TODAY.toISOString().slice(0,10)+".pdf").replace(/[\\/:*?"<>|]/g,"-");
+    const out=await dlCap.save({filename:fname,data:blob});
+    msg.textContent=out.status==="saved"?"Report saved. You can attach it to an email to your advisor.":"Report sent.";
+  }catch(e){
+    const code=e&&e.code;
+    msg.textContent=code==="declined"?"Report not saved.":code==="rate_limited"?"A save is already waiting for your answer.":(code==="unavailable"||code==="not_granted")?"Saving files isn't available here.":e&&e.message==="load"?"Couldn't load the PDF tools. Check your connection and try again.":"Something went wrong building the report. Try again.";
+    if(code==="unavailable"||code==="not_granted") btn.hidden=true;
+  }finally{ btn.disabled=false; btn.textContent=label; }
+}
+document.getElementById("btnReport").onclick=makeReport;
+(async()=>{ try{ dlCap=await window.claude?.use("downloads"); }catch(e){ dlCap=null; } if(dlCap) document.getElementById("btnReport").hidden=false; })();
+
+/* ---------- quick start ---------- */
+const Q={mode:"couple",names:["",""],birth:["",""],retire:["",""],rrsp:["",""],tfsa:["",""],other:"",cash:"",salary:["",""],save:"",pension:["",""],cpp:["",""],
+  province:"BC",home:"",mortgage:"",mortPay:"",spending:""};
+let qStep=0;
+const nm=i=>Q.names[i]||(i?"Your partner":"You");
+const qCols=()=>Q.mode==="single"?[0]:[0,1];
+const Q_STEPS=[
+  {title:"Let's start with you",lead:"Who the plan is for, when you were born, and when you'd like to stop working.",
+   rows:()=>[["mode","Planning for","mode1"],["names","Name","text",["Your name","Partner's name"]],["birth","Birth year","int"],["retire","Retire at age","int"],["province","Province or territory","prov1"]],
+   check:()=>{for(const i of qCols()){const b=+Q.birth[i],r=+Q.retire[i]; if(!(b>=1930&&b<=2008)) return "Enter a birth year between 1930 and 2008 for "+nm(i)+"."; if(!(r>=40&&r<=80)) return "Enter a retirement age between 40 and 80 for "+nm(i)+".";}}},
+  {title:"What you've saved so far",lead:"Rough numbers are fine. Check your latest statements if they're handy.",
+   rows:()=>[["rrsp","RRSP","$"],["tfsa","TFSA","$"],["other","Other investments","$1",Q.mode==="single"?"non-registered":"non-registered, both of you"],["cash","Cash and savings accounts","$1",Q.mode==="single"?"":"both of you"]]},
+  {title:"Income and pensions",lead:"Your pay before tax, what you save each year, and any pension you're expecting.",
+   rows:()=>[["salary","Salary before tax","$","per year, until retiring"],["save","Saved each year","$1",Q.mode==="single"?"into RRSPs and TFSAs":"both of you, into RRSPs and TFSAs"],["pension","Workplace pension","$","per year, if you'll get one"],["cpp","CPP at 65, monthly","$","from My Service Canada. Leave blank and we'll estimate"]]},
+  {title:"Your home",lead:"Home equity is counted in your estate. Your mortgage payments are part of your spending until it's paid off.",
+   rows:()=>[["home","Home value","$1"],["mortgage","Mortgage or HELOC owing","$1","leave blank if none"],["mortPay","Monthly payment","$1"]]},
+  {title:"Spending in retirement",lead:"How much you want to spend each year in retirement, in today's dollars, not counting mortgage payments. Many people plan for about 70% of what they spend now.",
+   rows:()=>[["spending","Spending per year","$1"]],
+   check:()=>{if(!(+Q.spending>0)) return "Enter how much you'd like to spend each year.";}}
+];
+function qField(key,type,i,ph){
+  const w=document.createElement("div"); w.className="field"+(type.startsWith("$")?" money":"");
+  let el;
+  if(type==="mode1"){el=document.createElement("select"); [["couple","Me and a partner"],["single","Just me"]].forEach(([v,l])=>{const op=document.createElement("option");op.value=v;op.textContent=l;el.appendChild(op);}); el.addEventListener("change",()=>{readQ(); renderQ();});}
+  else if(type==="prov1"){el=document.createElement("select"); Object.entries(PROV).sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([v,o])=>{const op=document.createElement("option");op.value=v;op.textContent=o.name;el.appendChild(op);});}
+  else{el=document.createElement("input"); el.type=type==="text"?"text":"number"; if(type!=="text"){el.inputMode="decimal";el.min="0";el.step=type==="int"?"1":"1000";} if(ph) el.placeholder=ph;}
+  const v=i==null?Q[key]:Q[key][i]; el.value=v==null?"":v;
+  el.id="q_"+key+(i==null?"":"_"+i); el.dataset.k=key; if(i!=null) el.dataset.i=i;
+  w.appendChild(el); return w;
+}
+function renderQ(){
+  const st=Q_STEPS[qStep], body=document.getElementById("qBody"); body.innerHTML="";
+  document.getElementById("qStep").textContent="Step "+(qStep+1)+" of "+Q_STEPS.length;
+  document.getElementById("qTitle").textContent=st.title; document.getElementById("qLead").textContent=st.lead;
+  document.getElementById("qBar").style.width=((qStep+1)/Q_STEPS.length*100)+"%";
+  document.getElementById("qErr").textContent="";
+  document.getElementById("qBack").style.visibility=qStep?"visible":"hidden";
+  document.getElementById("qNext").textContent=qStep===Q_STEPS.length-1?"See my results":"Next";
+  const isOne=t=>t==="$1"||t==="prov1"||t==="mode1", cols=qCols();
+  body.className="q-body"+(cols.length===1?" one":"");
+  const pairs=st.rows().some(r=>!isOne(r[2]));
+  if(pairs&&cols.length>1){ const b=document.createElement("div"); b.className="blank"; body.appendChild(b);
+    cols.forEach(i=>{const h=document.createElement("div"); h.className="colh"; h.textContent=qStep===0?(i?"Partner":"You"):nm(i); body.appendChild(h);}); }
+  st.rows().forEach(([key,label,type,hint])=>{
+    const single=isOne(type);
+    const l=document.createElement("label"); l.htmlFor="q_"+key+(single?"":"_0"); l.textContent=label;
+    if(typeof hint==="string"){const sm=document.createElement("small"); sm.textContent=hint; l.appendChild(sm);}
+    body.appendChild(l);
+    if(single){const f=qField(key,type==="$1"?"$":type); if(cols.length>1) f.classList.add("span2"); body.appendChild(f);}
+    else cols.forEach(i=>{const f=qField(key,type,i,Array.isArray(hint)?hint[i]:""); f.firstChild.setAttribute("aria-label",label+" for "+nm(i)); body.appendChild(f);});
+  });
+  if(qStep===2){const nt=document.createElement("p"); nt.className="q-note"; nt.textContent="We'll assume CPP and OAS start at 65 and full OAS (40 years in Canada). You can change both later."; body.appendChild(nt);}
+  if(qStep===0&&Q.mode==="couple"){const nt=document.createElement("p"); nt.className="q-note"; nt.textContent="Planning for a couple? We'll ask about each of you side by side."; body.appendChild(nt);}
+  const first=body.querySelector("input,select"); if(first) first.focus({preventScroll:true});
+}
+function readQ(){document.querySelectorAll("#qBody [data-k]").forEach(el=>{const k=el.dataset.k; if(el.dataset.i!=null) Q[k][+el.dataset.i]=el.value; else Q[k]=el.value;});}
+function buildFromQ(){
+  const d=clone(EXAMPLE);
+  d.people.forEach((p,i)=>{
+    if(Q.mode==="single"&&i>0){ p.name="Partner"; return; }  // kept only in case they switch to a couple later
+    const sal=n(Q.salary[i]);
+    Object.assign(p,{name:Q.names[i].trim()||(Q.mode==="single"?"You":(i?"Spouse 2":"Spouse 1")),birthYear:n(Q.birth[i]),retireAge:n(Q.retire[i]),lifeAge:95,salary:sal,
+      rrsp:n(Q.rrsp[i]),tfsa:n(Q.tfsa[i]),nonreg:n(Q.other)/(Q.mode==="single"?1:2),tfsaRoom:0,pension:n(Q.pension[i]),pensionStart:n(Q.retire[i]),survPct:60,
+      cpp65:Q.cpp[i]!==""?n(Q.cpp[i]):Math.round(CPP_MAX_65*clamp(sal/PAY.ympe,0,1)*0.8),cppStart:65,oasYears:40,oasStart:65});
+    const half=n(Q.save)/(Q.mode==="single"?1:2); p.tfsaContrib=Math.min(TFSA_ROOM,half); p.rrspContrib=Math.max(0,half-TFSA_ROOM);
+  });
+  Object.assign(d.house,{mode:Q.mode,province:Q.province||"BC",cash:n(Q.cash),spending:n(Q.spending),spendingLater:n(Q.spending),spendingChangeAge:0,survivorSpend:70,
+    homeValue:n(Q.home),mortgage:n(Q.mortgage),mortgageRate:4.5,mortgagePayment:n(Q.mortPay)*12,downsizeAge:0,downsizeAmount:0,ltcCost:0,ltcAge:85,events:[]});
+  d.assume.meltTarget=0;
+  return d;
+}
+function showQuick(on){
+  document.getElementById("quick").hidden=!on; document.getElementById("mainGrid").hidden=on;
+  document.querySelector(".head-right").hidden=on;
+  if(on){qStep=0; renderQ();
+    const saved=store.scenarios.some(x=>!x.example);
+    document.getElementById("qSkip").textContent=saved?"Skip to my saved plans":"Skip and explore the example instead";}
+  else drawChart();
+}
+document.getElementById("qForm").addEventListener("submit",e=>{
+  e.preventDefault(); readQ();
+  const err=Q_STEPS[qStep].check&&Q_STEPS[qStep].check(); if(err){document.getElementById("qErr").textContent=err; return;}
+  if(qStep<Q_STEPS.length-1){qStep++; renderQ(); window.scrollTo({top:0}); return;}
+  const id="s"+Date.now(), name="My plan";
+  const onlyExample=store.scenarios.length===1&&store.scenarios[0].example;
+  const sc={id,name:store.scenarios.some(x=>x.name===name)?name+" "+(store.scenarios.length+1):name,example:false,data:buildFromQ()};
+  if(onlyExample) store.scenarios=[sc]; else store.scenarios.push(sc);
+  store.active=id; save(); showQuick(false); renderTabs(); buildForm(); render();
+  document.getElementById("welcomeNote").hidden=false; window.scrollTo({top:0});
+});
+document.getElementById("qBack").onclick=()=>{readQ(); if(qStep>0){qStep--; renderQ();}};
+document.getElementById("qSkip").onclick=()=>{showQuick(false); save();};
+document.getElementById("btnQuick").onclick=()=>showQuick(true);
+
+(function(){ const el=document.getElementById("dataSrc"), nr=(TD.needsReview||[]).length;
+  el.innerHTML='<span class="chip-ok">✓ Synced from Airtable</span> Tax figures verified '+esc(new Date(TD.verified+"T12:00:00").toLocaleDateString("en-CA",{year:"numeric",month:"long",day:"numeric"}))+
+    ': 14 jurisdictions, '+Object.values(TD.prov).reduce((s,p)=>s+p.br.length,TD.fed.br.length)+' tax brackets, '+Object.keys(TD.benefits).length+' benefit figures.'+(nr?' '+nr+' item'+(nr>1?'s':'')+' still marked for review.':'');
+})();
+renderTabs(); buildForm(); render();
+showQuick(true);
+})();
+</script>
