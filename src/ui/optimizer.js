@@ -7,15 +7,13 @@ import {esc,full,money,tick} from "./format.js";
 import {buildForm} from "./form.js";
 import {render} from "./results.js";
 import {renderTabs} from "./scenarios.js";
-import {ASK_ERR,askSample,mdLite} from "./ask.js";
-import {PROV} from "../engine/tax.js";
 
 /* ---------- plan optimizer ---------- */
 let optHold=false;
-function staleOpt(){ if(!optHold&&typeof optPlans!=="undefined"&&optPlans&&!optRunning){ optPlans=null; document.getElementById("optOut").innerHTML=""; document.getElementById("optWhy").innerHTML=""; document.getElementById("optExplain").hidden=true; document.getElementById("optStatus").textContent="Your numbers changed. Run it again for updated plans."; } }
+function staleOpt(){ if(!optHold&&typeof optPlans!=="undefined"&&optPlans&&!optRunning){ optPlans=null; document.getElementById("optOut").innerHTML=""; document.getElementById("optStatus").textContent="Your numbers changed. Run it again for updated plans."; } }
 const OPT_GOALS={spend:"Spend the most",retire:"Retire earliest",estate:"Leave the most",tax:"Pay the least tax"};
 const optEl={goal:document.getElementById("optGoal"),target:document.getElementById("optTarget"),btn:document.getElementById("btnOpt"),
-  out:document.getElementById("optOut"),status:document.getElementById("optStatus"),explain:document.getElementById("optExplain"),why:document.getElementById("optWhy")};
+  out:document.getElementById("optOut"),status:document.getElementById("optStatus")};
 let optPlans=null, optMeta=null, optRunning=false;
 function combos(){const out=[]; for(const cpp of [65,67,70]) for(const oas of [65,70]) for(const melt of [0,40000,55000,70000]) for(const order of ORDERS.map(o=>o[0])) out.push({cpp,oas,melt,order}); return out;}
 function withCombo(d,c,extra){const x=clone(d); x.people.forEach(p=>{p.cppStart=c.cpp;p.oasStart=c.oas;}); x.assume.meltTarget=c.melt; x.assume.meltEnd=x.assume.meltEnd||71; x.assume.order=c.order; x.assume.split="yes"; if(extra) extra(x); return x;}
@@ -26,7 +24,7 @@ function optStatus(t){optEl.status.textContent=t;}
 async function runOptimizer(){
   if(optRunning) return; optRunning=true;
   const goal=optEl.goal.value, target=clamp(n(optEl.target.value),50,99)/100, d0=clone(active().data), job=++mc.job, CS=combos();
-  optEl.btn.disabled=true; optEl.out.innerHTML=""; optEl.why.innerHTML=""; optEl.explain.hidden=true; optPlans=null;
+  optEl.btn.disabled=true; optEl.out.innerHTML=""; optPlans=null;
   const N=150, plans=[];
   try{
     optStatus("Checking your current plan…");
@@ -107,22 +105,7 @@ function renderOpt(){
     sv.onclick=()=>{ const id="s"+Date.now(); store.scenarios.push({id,name:(i===0?"Best: ":"")+OPT_GOALS[m.goal],example:false,data:clone(p.d)}); store.active=id; save(); optHold=true; renderTabs(); buildForm(); render(); optHold=false; sv.replaceWith(Object.assign(document.createElement("span"),{className:"muted",textContent:"Saved as a new scenario."})); };
     row.append(ap,sv); card.appendChild(row); out.appendChild(card);
   });
-  optEl.explain.hidden=!askSample;
-}
-async function explainOpt(){
-  if(!askSample||!optPlans) return;
-  const m=optMeta; optEl.explain.disabled=true; optEl.why.innerHTML='<span class="thinking">Thinking…</span>';
-  const d0=m.base, names=ppl(d0).map(p=>p.name).join(" and ");
-  const summary=optPlans.map((p,i)=>(i===0?"Best plan":"Option "+String.fromCharCode(65+i))+": "+describeCombo(p,d0).join("; ")+". Money lasts in "+Math.round(p.pct*100)+"% of market histories. Estate after tax "+full(p.estate)+". Lifetime tax "+full(p.tax)+".").join("\n");
-  const prompt="You explain retirement plan options inside a Canadian retirement calculator. "+(isSingle(d0)?"The person is "+names:"The couple is "+names)+", living in "+PROV[d0.house.province||"BC"].name+". Their goal: "+OPT_GOALS[m.goal]+", while the money lasts in at least "+Math.round(m.target*100)+"% of randomized market histories.\n"+
-    "Current plan: money lasts in "+Math.round(m.curPct*100)+"% of histories, estate after tax "+full(m.curEstate)+", lifetime tax "+full(m.curTax)+". Current CPP start "+ppl(d0).map(p=>p.cppStart).join("/")+", OAS start "+ppl(d0).map(p=>p.oasStart).join("/")+", retirement ages "+ppl(d0).map(p=>p.retireAge).join("/")+", spending "+full(n(d0.house.spending))+".\n"+
-    "Options found by the optimizer (all amounts in today's dollars):\n"+summary+"\n\n"+
-    "In under 170 words, plain language: say which option fits their goal and why, what they give up compared with the others, and briefly explain why the key levers (for example delaying CPP/OAS or drawing the RRSP early) help. Use the numbers above only; don't invent figures. Use **bold** sparingly and '- ' bullets if helpful. End with one sentence suggesting they confirm major decisions with a fee-only planner.";
-  try{ const {text}=await askSample(prompt,{onText:({text})=>{optEl.why.innerHTML=mdLite(text);}}); optEl.why.innerHTML=mdLite(text); }
-  catch(e){ optEl.why.innerHTML=e.text?mdLite(e.text):""; if(e.code!=="cancelled") optEl.why.insertAdjacentHTML("beforeend",'<p class="note">'+esc(ASK_ERR[e.code]||"Couldn't reach Claude. Try again.")+'</p>'); }
-  finally{ optEl.explain.disabled=false; }
 }
 optEl.btn.onclick=runOptimizer;
-optEl.explain.onclick=explainOpt;
 
 export {staleOpt};

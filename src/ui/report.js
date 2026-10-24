@@ -12,10 +12,15 @@ import {chartImage} from "./chart.js";
 import {ASSUME_FIELDS,HOUSE_FIELDS,PEOPLE_FIELDS} from "./fields.js";
 
 /* ---------- PDF report ---------- */
-let dlCap=null;
 // jsPDF and its table plugin are bundled with the app but only downloaded when someone builds a report
 const loadPdf=async()=>{ try{ const [{jsPDF},{applyPlugin}]=await Promise.all([import("jspdf"),import("jspdf-autotable")]); applyPlugin(jsPDF); return jsPDF; }catch(e){ throw new Error("load"); } };
 const pdfTxt=t=>String(t).replace(/→/g,">").replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/…/g,"...").replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF–—]/g,"");
+// A normal browser download: the file goes straight to the visitor's device, nothing is uploaded
+function saveFile(blob,filename){
+  const url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
 async function makeReport(){
   const btn=document.getElementById("btnReport"), msg=document.getElementById("reportMsg");
   btn.disabled=true; const label=btn.textContent; btn.textContent="Building report…"; msg.textContent="";
@@ -82,15 +87,11 @@ async function makeReport(){
     for(let i=1;i<=pages;i++){doc.setPage(i); const pw=doc.internal.pageSize.getWidth(), ph=doc.internal.pageSize.getHeight(); doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(...mute);
       doc.text(pdfTxt("Run The Numbers - "+s.name+" - "+today),M-14,ph-24); doc.text("Page "+i+" of "+pages,pw-M+14,ph-24,{align:"right"});}
     const blob=doc.output("blob");
-    btn.textContent="Saving…";
     const fname=pdfTxt("Retirement plan - "+s.name+" - "+TODAY.toISOString().slice(0,10)+".pdf").replace(/[\\/:*?"<>|]/g,"-");
-    const out=await dlCap.save({filename:fname,data:blob});
-    msg.textContent=out.status==="saved"?"Report saved. You can attach it to an email to your advisor.":"Report sent.";
+    saveFile(blob,fname);
+    msg.textContent="Report downloaded. You can attach it to an email to your advisor.";
   }catch(e){
-    const code=e&&e.code;
-    msg.textContent=code==="declined"?"Report not saved.":code==="rate_limited"?"A save is already waiting for your answer.":(code==="unavailable"||code==="not_granted")?"Saving files isn't available here.":e&&e.message==="load"?"Couldn't load the PDF tools. Check your connection and try again.":"Something went wrong building the report. Try again.";
-    if(code==="unavailable"||code==="not_granted") btn.hidden=true;
+    msg.textContent=e&&e.message==="load"?"Couldn't load the PDF tools. Check your connection and try again.":"Something went wrong building the report. Try again.";
   }finally{ btn.disabled=false; btn.textContent=label; }
 }
 document.getElementById("btnReport").onclick=makeReport;
-(async()=>{ try{ dlCap=await window.claude?.use("downloads"); }catch(e){ dlCap=null; } if(dlCap) document.getElementById("btnReport").hidden=false; })();
