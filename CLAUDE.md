@@ -29,7 +29,7 @@ It is a small Vite project in plain JavaScript (no framework). `npm run build` p
 
 - `index.html`: the page skeleton and markup: header with scenario tabs; quick-start wizard; results column (verdict and takeaways, stats, chart, Market risk, Find my best plan, What would it take?, RRSP drawdown finder, scenario comparison, year-by-year table); inputs column (scenario, backup, people, household, events, assumptions, "How tax is handled").
 - `src/styles.css`: colour tokens on `:root` with light and dark themes; two-column layout (results left, inputs right) that stacks on phones.
-- `src/data/tax-data.json`: the tax and benefit figures, generated from an Airtable base (sync script not in this repo yet). Don't hand-edit it. JSON has no `Infinity`, so each top bracket stores `null` for "no upper limit"; `src/data/tax-data.js` turns that back into `Infinity`. The figures are built into the app, so visitors' browsers never contact Airtable.
+- `src/data/tax-data.json`: the tax and benefit figures, generated from an Airtable base by `npm run sync` (see below). Don't hand-edit it. JSON has no `Infinity`, so each top bracket stores `null` for "no upper limit"; `src/data/tax-data.js` turns that back into `Infinity`. The figures are built into the app, so visitors' browsers never contact Airtable.
 - `src/engine/`: the numbers, with no page code.
   - `dates.js`: `TODAY`, `START_YEAR`, `F0` (the partial first year).
   - `benefits.js`: CPP/OAS/survivor figures, `cppAnnual`, `oasAnnual`, `survCppAnnual`, `rrifFactor`.
@@ -39,6 +39,7 @@ It is a small Vite project in plain JavaScript (no framework). `npm run build` p
   - `montecarlo.js`: `rng`, `mcRun`, `quickMC` with the fixed seed. `mc.job` is the current run; `++mc.job` stops any run still going.
 - `src/storage.js`: `load`, `validStore`, `migrate`, `save`, the scenario `store` and `active()`.
 - `src/ui/`: the screens. `form.js` and `fields.js` (inputs and `HELP`), `results.js` (`render`, table, compare, `takeaways`), `chart.js` (canvas charts, including the PDF chart), `scenarios.js` (tabs, drawdown finder, backup/restore), `risk.js` (stress test, market histories, "What would it take?"), `optimizer.js` (`combos`, `runOptimizer`), `report.js` (PDF with jsPDF from npm, saved as a normal browser download), `quickstart.js`, `format.js`.
+- `scripts/sync-airtable.mjs`: the Airtable sync (`npm run sync`).
 - `src/main.js`: loads everything and starts the app. `src/golden-hooks.js` is only built for the golden tests.
 - `src/fonts.css` and `src/fonts/`: the three fonts (latin subset, from Fontsource, SIL Open Font License), served with the app.
 - `public/`: `favicon.svg` and `icons/` (192, 512, maskable 512, Apple touch 180; drawn from `icons/icon.svg`).
@@ -68,6 +69,17 @@ npm run golden:update            # re-records the snapshots. Only after Alex OKs
 - `tests/golden/SUMMARY.md` is a readable table of the headline numbers.
 - GitHub Actions runs `npm test` on every push and pull request (`.github/workflows/golden-tests.yml`).
 - `node tests/golden.test.js --html some-copy.html` checks an old single-file copy of the app (for example `git show caf77c1:run-the-numbers.html > old.html`) against the same snapshots.
+
+## Syncing the tax figures from Airtable
+
+`npm run sync` rebuilds `src/data/tax-data.json` from Alex's Airtable base `app2siuG6WVXJu2G6` (tables Jurisdictions, Brackets, Benefits & limits, RRIF minimums). `npm run sync -- --dry-run` shows the same report without writing.
+
+- The token is read from `AIRTABLE_TOKEN` in the environment or in `.env` (ignored by git; `.env.example` shows the format). Never commit it, paste it in chat, or give it a `VITE_` prefix (Vite would build it into the site).
+- It runs on a developer's machine only. Visitors' browsers never contact Airtable.
+- "Special rules" holds JSON on its first line. The sync maps it to the app's names: `bpaPhase` (federal: `bpaMin`/`bpaLo`/`bpaHi`; provincial: `[lo, hi, min]`), `canadaEmploymentAmount` (`cea`), `surtax` (`onSurtax`), `healthPremium` (`onHealth`), `seniorSupplement` (`seniorSupp`), `bpaMirrorsFederal` (`bpaFed`, no `bpa`), `quebec` (`qc`, replacing `age`/`ageThr`/`pen`), `bcReduction` (`bcRed`). An unknown rule is an error, so a new rule needs engine code first.
+- Before writing it checks that every jurisdiction has brackets in order with only the top one open-ended, every figure the app reads is present, and RRIF factors cover ages 71 to 95. It prints what changed since the last sync and what is still marked "Needs review", and writes nothing if a check fails or nothing changed (so `synced` only moves when figures do).
+- It keeps the file's key order and layout, so unchanged figures give a byte-identical file and the same tax-data hash in the golden tests.
+- Changed figures change results, so rule 1 applies: report the differences to Alex and get an OK before `npm run golden:update` and committing.
 
 ## Roadmap
 
