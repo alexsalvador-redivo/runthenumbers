@@ -3,19 +3,19 @@
 //
 //   npm test                  compare today's app to the saved snapshots in tests/golden/
 //   npm run golden:update     re-record the snapshots (only after Alex OKs a change in results)
-//   node tests/golden.test.js --html other.html   check a different copy of the app
+//   node tests/golden.test.js --html other.html   check an old single-file copy of the app instead of the Vite build
 //
 // Every number is compared exactly, to the last digit.
 const fs = require("fs");
 const path = require("path");
-const { readApp, openApp, launch, APP, TIMEZONE } = require("./harness");
+const { buildApp, readSingleFile, openApp, launch, TIMEZONE } = require("./harness");
 const C = require("./cases");
 
 const GOLDEN = path.join(__dirname, "golden");
 const args = process.argv.slice(2);
 const UPDATE = args.includes("--update");
 const htmlArg = args.indexOf("--html");
-const APP_FILE = htmlArg >= 0 ? path.resolve(args[htmlArg + 1]) : APP;
+const HTML_FILE = htmlArg >= 0 ? path.resolve(args[htmlArg + 1]) : null;
 
 // JSON can't hold Infinity, NaN or -0, so spell them out.
 const normalize = x => JSON.parse(JSON.stringify(x, (k, v) =>
@@ -134,14 +134,16 @@ function summary(meta, byDate) {
 
 (async () => {
   const t0 = Date.now();
-  const { html, taxDataSha256 } = readApp(APP_FILE);
+  const app = HTML_FILE ? readSingleFile(HTML_FILE) : await buildApp();
+  let taxDataSha256;
   const browser = await launch();
   const actual = {}, byDate = {};
   let marginal = [];
   try {
     for (const [date, iso] of Object.entries(C.DATES)) {
-      const { context, page, errors } = await openApp({ browser, html, dateIso: iso });
+      const { context, page, errors } = await openApp({ browser, app, dateIso: iso });
       if (!actual["engine.json"]) {
+        taxDataSha256 = await app.taxDataSha256(page);
         actual["engine.json"] = normalize({ taxDataSha256, ...(await page.evaluate(engineInPage)) });
         marginal = await page.evaluate(marginalInPage, C.MARGINAL);
       }
@@ -181,7 +183,7 @@ function summary(meta, byDate) {
   if (fs.existsSync(GOLDEN)) for (const f of walk(GOLDEN)) { const rel = path.relative(GOLDEN, f).split(path.sep).join("/"); if (rel.endsWith(".json") && !listed.has(rel)) failures.push([rel, ["saved snapshot has no matching case any more"]]); }
 
   const secs = ((Date.now() - t0) / 1000).toFixed(1);
-  if (!failures.length) { if (!badRates.length) console.log("✓ All " + listed.size + " golden snapshots match exactly (" + secs + "s)."); return; }
+  if (!failures.length) { if (!badRates.length) console.log("✓ All " + listed.size + " golden snapshots match exactly for " + app.label + " (" + secs + "s)."); return; }
   console.error("✗ " + failures.length + " of " + listed.size + " snapshots changed (" + secs + "s):\n");
   for (const [rel, d] of failures) { console.error("  " + rel); d.forEach(x => console.error("    " + x)); }
   console.error("\nIf this change was meant to move results, get Alex's OK, then run: npm run golden:update");

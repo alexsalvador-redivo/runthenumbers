@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Run The Numbers</title>
+<meta name="description" content="Retirement projection for Canadians, on your own or as a couple, in any province or territory, in today's dollars.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script type="module" src="/src/main.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Run The Numbers</h1>
+      <p class="sub">Retirement projection for Canadians, on your own or as a couple, in any province or territory, in today's dollars. <b>Your figures are kept in this browser only.</b></p>
+    </div>
+    <div class="head-right"><button class="btn" type="button" id="btnReport" hidden>Report (PDF)</button><button class="btn" type="button" id="btnQuick">Quick start</button><div class="scen" id="scenTabs" role="group" aria-label="Scenarios"></div></div>
+  </header>
+
+  <section class="quick" id="quick" hidden aria-labelledby="qTitle">
+    <div class="q-card">
+      <div class="q-progress" aria-hidden="true"><i id="qBar"></i></div>
+      <p class="eyebrow" id="qStep">Step 1 of 5</p>
+      <h2 class="q-title" id="qTitle">Let's start with the two of you</h2>
+      <p class="q-lead" id="qLead"></p>
+      <form id="qForm" novalidate><div class="q-body" id="qBody"></div>
+        <p class="q-err" id="qErr" role="alert"></p>
+        <div class="q-nav">
+          <button class="btn" type="button" id="qBack">Back</button>
+          <button class="btn primary" type="submit" id="qNext">Next</button>
+        </div>
+      </form>
+      <p class="q-skip"><button type="button" class="linkbtn" id="qSkip">Skip and explore the example instead</button></p>
+    </div>
+  </section>
+
+  <div class="grid" id="mainGrid">
+    <section class="results" aria-label="Results">
+      <div class="verdict" id="verdict"><span class="eyebrow">Does the money last?</span><span class="big" id="vBig">…</span><p id="vText"></p><ul class="takeaways" id="takeaways"></ul></div>
+      <p class="report-msg" id="reportMsg" role="status"></p>
+      <div class="stats">
+        <div class="stat"><span class="v" id="stRetire">–</span><span class="k" id="stRetireK">Investments when you both retire</span></div>
+        <div class="stat"><span class="v" id="stIncome">–</span><span class="k" id="stIncomeK">Lifetime income tax and OAS clawback</span></div>
+        <div class="stat"><span class="v" id="stEnd">–</span><span class="k" id="stEndK">Estate after tax at end of plan, incl. home</span></div>
+      </div>
+      <div class="panel">
+        <div class="chart-head">
+          <h2>Investments over time</h2>
+          <div class="legend">
+            <span><i style="background:var(--s-rrsp)"></i>RRSP / RRIF</span>
+            <span><i style="background:var(--s-tfsa)"></i>TFSA</span>
+            <span><i style="background:var(--s-nonreg)"></i>Non-registered</span>
+            <span><i style="background:var(--s-cash)"></i>Cash</span>
+          </div>
+        </div>
+        <div class="chart-box" id="chartBox"><canvas id="chart" aria-label="Stacked chart of investment balances by year"></canvas><div class="tip" id="tip" hidden></div></div>
+        <p class="note" id="chartNote">Dashed lines mark each retirement; the dotted line marks the first death. Home equity is not drawn.</p>
+      </div>
+      <div class="panel ask" id="askPanel" hidden>
+        <div class="chart-head"><h2>Ask about your plan</h2><button class="linkbtn" type="button" id="askClear">Clear</button></div>
+        <p class="note" style="margin:0 0 8px">Claude reads the plan you're looking at, tests changes for you, and can suggest one to apply. Your plan's numbers are sent to Claude when you ask, using your Claude account. It isn't financial advice.</p>
+        <div class="ask-log" id="askLog" aria-live="polite"></div>
+        <div class="chips" id="askChips">
+          <button type="button" class="chip">What's the biggest risk in our plan?</button>
+          <button type="button" class="chip">Should we take CPP at 65 or 70?</button>
+          <button type="button" class="chip">How can we pay less tax over our lifetime?</button>
+          <button type="button" class="chip">How much more could we safely spend?</button>
+        </div>
+        <form class="ask-form" id="askForm">
+          <textarea id="askBox" rows="2" placeholder="Ask anything about your plan…" aria-label="Your question"></textarea>
+          <button class="btn primary" type="submit" id="askSend">Ask</button>
+          <button class="btn" type="button" id="askStop" hidden>Stop</button>
+        </form>
+      </div>
+      <div class="panel" id="risk">
+        <div class="chart-head"><h2>Market risk</h2><button class="btn" id="btnMC" type="button">Run 500 market histories</button></div>
+        <div class="stress" id="stress"></div>
+        <div id="mcOut" hidden>
+          <div class="mc-top"><div class="gauge" id="mcGauge"><span class="v" id="mcPct">–</span><span class="k">of market histories, the money lasts</span></div>
+            <div class="mc-facts" id="mcFacts"></div></div>
+          <div class="chart-box" style="height:220px"><canvas id="mcChart" aria-label="Range of investment balances across market histories"></canvas></div>
+          <p class="note">Shaded band: the middle 80% of outcomes. Line: the median. Today's dollars.</p>
+        </div>
+        <p class="note" id="mcNote">Replays your plan with returns that swing up and down around your average, using your volatility setting.</p>
+      </div>
+      <div class="panel" id="optimizer">
+        <h2 style="margin-bottom:6px">Find my best plan</h2>
+        <p class="note" style="margin:0 0 10px">Tests 72 combinations of CPP and OAS timing, RRSP drawdown and withdrawal order, checks the finalists against market histories, and shows the best three for your goal. Takes about 20 to 40 seconds.</p>
+        <div class="solve-row">
+          <label for="optGoal">Goal</label>
+          <div class="field"><select id="optGoal"><option value="spend">Spend the most</option><option value="retire">Retire earliest</option><option value="estate">Leave the most</option><option value="tax">Pay the least tax</option></select></div>
+          <label for="optTarget">Lasts in at least</label>
+          <div class="field pct"><input type="number" id="optTarget" value="85" min="50" max="99" step="1" inputmode="decimal"></div>
+          <button class="btn primary" id="btnOpt" type="button">Find best plans</button>
+        </div>
+        <p class="solve-out" id="optStatus" role="status"></p>
+        <div class="opt-list" id="optOut"></div>
+        <div class="actions" style="margin-top:10px"><button class="btn" id="optExplain" type="button" hidden>Explain these plans</button></div>
+        <div class="opt-why" id="optWhy" aria-live="polite"></div>
+      </div>
+      <div class="panel" id="solver">
+        <h2 style="margin-bottom:6px">What would it take?</h2>
+        <p class="note" style="margin:0 0 10px">Finds the change that gets your plan to a target success rate across market histories.</p>
+        <div class="solve-row">
+          <label for="solveLever">Change</label>
+          <div class="field"><select id="solveLever"><option value="spend">Spending</option><option value="retire">Retirement age</option><option value="gov">CPP and OAS start</option></select></div>
+          <label for="solveTarget">Target</label>
+          <div class="field pct"><input type="number" id="solveTarget" value="85" min="50" max="99" step="1" inputmode="decimal"></div>
+          <button class="btn" id="btnSolve" type="button">Find it</button>
+        </div>
+        <p class="solve-out" id="solveOut" role="status"></p>
+      </div>
+      <div class="panel" id="finder">
+        <div class="chart-head"><h2>RRSP drawdown finder</h2><button class="btn" id="btnFind" type="button">Compare targets</button></div>
+        <p class="note" style="margin:0" id="finderNote">Tests drawing each spouse's RRSP up to different income levels after retiring, then shows which gives the largest estate after tax.</p>
+        <div class="tbl-wrap" id="finderWrap" hidden style="max-height:none;margin-top:10px"><table id="finderTbl" style="min-width:520px"></table></div>
+      </div>
+      <div class="panel" id="comparePanel" hidden>
+        <h2 style="margin-bottom:8px">Scenarios side by side</h2>
+        <div class="compare" id="compare"></div>
+      </div>
+      <div class="panel">
+        <details class="yby"><summary>Year by year</summary>
+          <div class="tbl-wrap"><table id="tbl"></table></div>
+        </details>
+      </div>
+    </section>
+
+    <section class="inputs" aria-label="Your numbers">
+      <div class="welcome" id="welcomeNote" hidden>Your plan is ready, with results alongside. Everything the quick start assumed, like CPP and OAS at 65 and a 5.5% return, is in the fields below. Change anything and the results update.</div>
+      <div class="example" id="exampleNote">These are <b>example figures</b>, not yours. Replace them and the projection updates as you type.</div>
+      <fieldset><legend>Scenario</legend>
+        <div class="single">
+          <label for="scenName">Scenario name</label><div class="field"><input type="text" id="scenName"></div>
+        </div>
+        <div class="actions" style="margin-top:12px">
+          <button class="btn" id="btnCopy" type="button">Copy as new scenario</button>
+          <button class="btn" id="btnReset" type="button">Reset to example</button>
+          <button class="btn danger" id="btnDelete" type="button">Delete scenario</button>
+        </div>
+      </fieldset>
+      <fieldset><legend>Backup</legend>
+        <p class="fhint">Your scenarios are saved only in this browser. Copy a backup to keep them safe or move them to another device.</p>
+        <div class="actions"><button class="btn" id="btnBackup" type="button">Copy backup</button></div>
+        <div class="field" style="margin-top:10px"><textarea id="backupText" rows="3" placeholder="Paste a backup here to restore it" aria-label="Backup text"></textarea></div>
+        <div class="actions" style="margin-top:8px"><button class="btn" id="btnRestore" type="button">Restore from backup</button></div>
+        <p class="fhint" id="backupMsg" style="margin:8px 0 0" role="status"></p>
+      </fieldset>
+      <fieldset id="fsPeople"><legend>The two of you</legend>
+        <div class="single" style="margin-bottom:10px"><label for="hhMode">Planning for <button type="button" class="help-btn" data-help="mode" aria-label="What is planning for?" aria-expanded="false">?</button></label><div class="field"><select id="hhMode"><option value="couple">Me and a partner</option><option value="single">Just me</option></select></div></div>
+        <div class="pair" id="peopleGrid"></div></fieldset>
+      <fieldset><legend>Household</legend><div class="single" id="houseGrid"></div></fieldset>
+      <fieldset><legend>Big expenses and windfalls <button type="button" class="help-btn" data-help="events" aria-label="What are big expenses and windfalls?" aria-expanded="false">?</button></legend>
+        <p class="fhint" id="evHint">One-time or repeating costs and money coming in, timed by Spouse 1's age.</p>
+        <div id="evList" class="ev-list"></div>
+        <div class="actions" style="margin-top:10px"><button class="btn" id="btnAddEv" type="button">Add an event</button></div>
+      </fieldset>
+      <fieldset><legend>Assumptions</legend>
+        <p class="fhint">Returns are before inflation. Everything is shown in today's dollars.</p>
+        <div class="single" id="assumeGrid"></div>
+      </fieldset>
+      <div class="panel limits">
+        <p class="data-src" id="dataSrc"></p>
+        <b style="color:var(--fg)">How tax is handled</b>
+        <ul>
+          <li>Federal and provincial tax use 2026 brackets and credits for all 13 provinces and territories: basic personal, age, pension income and CPP/EI, plus Ontario's surtax and Health Premium, BC's tax reduction, Manitoba's basic amount phase-out, and Quebec's abatement and family-income credits. Brackets are assumed to rise with inflation.</li>
+          <li>Checked in October 2026: brackets and credits for every province against CRA, provincial and TaxTips figures, and combined marginal rates against a published BC tax card.</li>
+          <li>OAS clawback starts at $95,323 of net income. Pension splitting picks the split that saves the most each year.</li>
+          <li>RRSP withdrawals from 65 are treated as RRIF income, so they qualify for the pension credit and splitting.</li>
+          <li>Extra RRSP money not needed for spending goes into TFSA room first, then non-registered. Estate tax assumes the remaining RRIF is taxed in one final return.</li>
+          <li>When a spouse dies, RRSP/RRIF, TFSA and non-registered money roll to the survivor tax-free. OAS stops, pension splitting ends, and the survivor gets the CPP survivor's pension (capped with their own CPP) plus the $2,500 death benefit.</li>
+          <li>Taxable income events are taxed as regular income without CPP/EI. Care costs don't claim the medical expense credit yet.</li>
+          <li>Not yet modelled: tax on non-registered growth; low-income tax reductions outside BC (like Ontario's); Quebec's Health Services Fund contribution and QPP/QPIP payroll rates (CPP/EI rates are used); and indexation pauses in some provinces.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+  <footer class="site-foot">
+    <p><b>Educational demo.</b> Not financial, tax or legal advice. Check your own figures with a qualified, fee-only planner.</p>
+    <p>Built with Claude. Tax and benefit figures are kept in Airtable, checked against CRA and provincial sources, and synced into this page.</p>
+  </footer>
+</div>
+</body>
+</html>

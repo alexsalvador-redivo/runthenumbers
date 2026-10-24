@@ -1,12 +1,20 @@
 {
   "name": "run-the-numbers",
   "private": true,
-  "description": "Canadian retirement projection calculator. Static site; package.json is only for the tests.",
+  "description": "Canadian retirement projection calculator. A static site built with Vite; no server.",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "node tests/golden.test.js",
     "golden:update": "node tests/golden.test.js --update"
   },
   "devDependencies": {
-    "playwright": "1.63.0"
+    "playwright": "1.63.0",
+    "vite": "^8.3.5"
+  },
+  "dependencies": {
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.9"
   }
 }
