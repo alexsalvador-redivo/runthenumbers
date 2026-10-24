@@ -7,6 +7,7 @@ npm install
 npm run dev       # local server with live reload
 npm run build     # static site in dist/
 npm test          # golden tests: tax and projection results must match exactly
+npm run sync      # rebuild the tax figures from Airtable (needs AIRTABLE_TOKEN in .env)
 ```
 
 See CLAUDE.md for how the code is laid out and the rules for changing it.
@@ -20,3 +21,11 @@ The built site is a Progressive Web App: it can be added to the home screen and 
 - **Desktop Chrome or Edge:** the install icon at the right of the address bar.
 
 When a new version is published, the app downloads it in the background and uses it the next time it's opened.
+
+## Updating the tax figures
+
+The tax and benefit figures live in an Airtable base and are copied into `src/data/tax-data.json`, so the app never contacts Airtable.
+
+1. Copy `.env.example` to `.env` and put your Airtable token after `AIRTABLE_TOKEN=`. `.env` is ignored by git.
+2. Run `npm run sync -- --dry-run` to see what changed and what is still marked "Needs review". Nothing is written if a check fails.
+3. Run `npm run sync` to write the file, then `npm test`. If figures changed, the golden tests show which results move; accept them with `npm run golden:update` only when you mean to.

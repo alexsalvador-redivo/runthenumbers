@@ -3,3 +3,8 @@ Thumbs.db
 node_modules/
 .netlify/
 dist/
+
+# Airtable token for npm run sync. Never commit it.
+.env
+.env.*
+!.env.example
