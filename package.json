@@ -1,0 +1,12 @@
+{
+  "name": "run-the-numbers",
+  "private": true,
+  "description": "Canadian retirement projection calculator. Static site; package.json is only for the tests.",
+  "scripts": {
+    "test": "node tests/golden.test.js",
+    "golden:update": "node tests/golden.test.js --update"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}
