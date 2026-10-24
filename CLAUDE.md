@@ -40,12 +40,15 @@ It is a small Vite project in plain JavaScript (no framework). `npm run build` p
 - `src/storage.js`: `load`, `validStore`, `migrate`, `save`, the scenario `store` and `active()`.
 - `src/ui/`: the screens. `form.js` and `fields.js` (inputs and `HELP`), `results.js` (`render`, table, compare, `takeaways`), `chart.js` (canvas charts, including the PDF chart), `scenarios.js` (tabs, drawdown finder, backup/restore), `risk.js` (stress test, market histories, "What would it take?"), `optimizer.js` (`combos`, `runOptimizer`), `report.js` (PDF with jsPDF from npm, saved as a normal browser download), `quickstart.js`, `format.js`.
 - `src/main.js`: loads everything and starts the app. `src/golden-hooks.js` is only built for the golden tests.
+- `src/fonts.css` and `src/fonts/`: the three fonts (latin subset, from Fontsource, SIL Open Font License), served with the app.
+- `public/`: `favicon.svg` and `icons/` (192, 512, maskable 512, Apple touch 180; drawn from `icons/icon.svg`).
+- **Installable app (PWA)**: `vite-plugin-pwa` in `vite.config.mjs` writes `manifest.webmanifest`, `sw.js` and `registerSW.js` at build time. The service worker precaches the app on the first visit so it opens offline; with `autoUpdate`, a newly published version downloads in the background and is used from the next launch. jsPDF's unused HTML helpers (html2canvas, DOMPurify, canvg) are left out of the precache. The golden tests block service workers.
 
 ## Things to know
 
 - **Results depend on today's date.** `START_YEAR` and the partial first year (`F0`) come from `new Date()`. Tests must pin the date to get repeatable numbers.
 - **No `window.claude`.** The app no longer uses the claude.ai Artifact runtime. Two features that needed it were removed in October 2026 for version 1 (Alex's decision): **Ask about your plan** (a chat panel that sent the plan to Claude, with tools to test a change, run market histories and propose a change with an Apply button) and **Explain these plans** (a button under the optimizer results that asked Claude to compare the three plans). Both could return later through a small server-side API proxy that holds the API key, but that breaks "no server" and sends plan data off the device, so it needs Alex's OK first (rules 2 and 4). Their code is in the git history just before the commit that removed them (`src/ui/ask.js`, and `explainOpt` in `src/ui/optimizer.js`).
-- External loads today: Google Fonts. jsPDF and jspdf-autotable are npm packages, bundled by Vite and downloaded only when someone builds a PDF.
+- **No external loads.** Fonts are self-hosted; jsPDF and jspdf-autotable are npm packages, bundled by Vite and downloaded only when someone builds a PDF (and precached for offline use).
 - `npm run dev` serves the app with live reload; `npm run build` then `npm run preview` serves the built site.
 
 ## Testing
@@ -70,6 +73,6 @@ npm run golden:update            # re-records the snapshots. Only after Alex OKs
 
 1. Orient and plan (done): this file, git repository.
 2. Golden tests that lock in today's tax and simulation results (done).
-3. Standalone page: Vite project with an HTML skeleton and jsPDF from npm (done), PDF saved as a normal browser download and the Claude-only features (Ask about your plan, Explain these plans) removed (done, Alex's decision 2026-10-24), self-hosted fonts.
-4. PWA: manifest, icons, service worker for offline use, install prompt.
-5. Netlify: `netlify.toml`, security headers (strict CSP with no outside connections), deploy from GitHub.
+3. Standalone page: Vite project with an HTML skeleton and jsPDF from npm (done), PDF saved as a normal browser download and the Claude-only features (Ask about your plan, Explain these plans) removed (done, Alex's decision 2026-10-24), self-hosted fonts (done).
+4. PWA: manifest, icons, service worker for offline use (done). An in-app "Install" button is not added yet.
+5. Netlify: `netlify.toml`, security headers (strict CSP with no outside connections), deploy from GitHub. Serve `sw.js`, `registerSW.js` and `manifest.webmanifest` with `Cache-Control: no-cache` so updates are picked up.
