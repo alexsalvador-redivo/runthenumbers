@@ -8,6 +8,7 @@ npm run dev       # local server with live reload
 npm run build     # static site in dist/
 npm test          # golden tests: tax and projection results must match exactly
 npm run sync      # rebuild the tax figures from Airtable (needs AIRTABLE_TOKEN in .env)
+npm run og-image  # redraw the link-preview picture (public/og-image.png)
 ```
 
 See CLAUDE.md for how the code is laid out and the rules for changing it.
@@ -29,3 +30,7 @@ The tax and benefit figures live in an Airtable base and are copied into `src/da
 1. Copy `.env.example` to `.env` and put your Airtable token after `AIRTABLE_TOKEN=`. `.env` is ignored by git.
 2. Run `npm run sync -- --dry-run` to see what changed and what is still marked "Needs review". Nothing is written if a check fails.
 3. Run `npm run sync` to write the file, then `npm test`. If figures changed, the golden tests show which results move; accept them with `npm run golden:update` only when you mean to.
+
+## Sharing the link
+
+`site.config.json` holds the site's public address and the footer's "Built by" name and link. Link previews on LinkedIn, Substack and elsewhere need the full address, so update `url` there once the site has its Netlify address or a custom domain, then rebuild. After publishing, paste the link into LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspector/) to check the preview and refresh LinkedIn's cached copy.

@@ -8,7 +8,8 @@
     "preview": "vite preview",
     "test": "node tests/golden.test.js",
     "golden:update": "node tests/golden.test.js --update",
-    "sync": "node scripts/sync-airtable.mjs"
+    "sync": "node scripts/sync-airtable.mjs",
+    "og-image": "node scripts/og-image.mjs"
   },
   "devDependencies": {
     "playwright": "1.63.0",

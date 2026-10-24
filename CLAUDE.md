@@ -27,7 +27,9 @@ It is a small Vite project in plain JavaScript (no framework). `npm run build` p
 
 ## How the code is laid out
 
-- `index.html`: the page skeleton and markup: header with scenario tabs; quick-start wizard; results column (verdict and takeaways, stats, chart, Market risk, Find my best plan, What would it take?, RRSP drawdown finder, scenario comparison, year-by-year table); inputs column (scenario, backup, people, household, events, assumptions, "How tax is handled").
+- `index.html`: the page skeleton and markup: link-preview metadata (Open Graph); header with scenario tabs; privacy note; quick-start wizard; results column (verdict and takeaways, stats, chart, Market risk, Find my best plan, What would it take?, RRSP drawdown finder, scenario comparison, year-by-year table); inputs column (scenario, backup, people, household, events, assumptions, "How tax is handled").
+- `site.config.json`: the public address (`url`, used for the canonical link and the link-preview image, which must be full addresses) and the footer's "Built by" name and link. A small plugin in `vite.config.mjs` fills `%SITE_URL%`, `%BUILT_BY%` and `%BUILT_BY_URL%` in `index.html` at build time. Update `url` when the Netlify address or a custom domain is set.
+- `public/og-image.png`: the 1200 × 630 link-preview picture, drawn from the example plan by `npm run og-image` (`scripts/og-image.mjs`). Redraw it after a visible change to the results column. It is left out of the service worker's precache.
 - `src/styles.css`: colour tokens on `:root` with light and dark themes; two-column layout (results left, inputs right) that stacks on phones.
 - `src/data/tax-data.json`: the tax and benefit figures, generated from an Airtable base by `npm run sync` (see below). Don't hand-edit it. JSON has no `Infinity`, so each top bracket stores `null` for "no upper limit"; `src/data/tax-data.js` turns that back into `Infinity`. The figures are built into the app, so visitors' browsers never contact Airtable.
 - `src/engine/`: the numbers, with no page code.
@@ -87,4 +89,5 @@ npm run golden:update            # re-records the snapshots. Only after Alex OKs
 2. Golden tests that lock in today's tax and simulation results (done).
 3. Standalone page: Vite project with an HTML skeleton and jsPDF from npm (done), PDF saved as a normal browser download and the Claude-only features (Ask about your plan, Explain these plans) removed (done, Alex's decision 2026-10-24), self-hosted fonts (done).
 4. PWA: manifest, icons, service worker for offline use (done). An in-app "Install" button is not added yet.
-5. Netlify: `netlify.toml`, security headers (strict CSP with no outside connections), deploy from GitHub. Serve `sw.js`, `registerSW.js` and `manifest.webmanifest` with `Cache-Control: no-cache` so updates are picked up.
+5. Public sharing (done): "Built by Alex Salvador" footer linking to LinkedIn, privacy note under the header, link-preview metadata and image, phone-width fixes (narrow selects take a full row under 420px; chart year labels stay inside the chart).
+6. Netlify: `netlify.toml`, security headers (strict CSP with no outside connections), deploy from GitHub. Serve `sw.js`, `registerSW.js` and `manifest.webmanifest` with `Cache-Control: no-cache` so updates are picked up.

@@ -6,6 +6,20 @@
 <title>Run The Numbers</title>
 <meta name="description" content="Retirement projection for Canadians, on your own or as a couple, in any province or territory, in today's dollars.">
 <meta name="theme-color" content="#1c6a54">
+<link rel="canonical" href="%SITE_URL%/">
+<!-- Link previews (LinkedIn, Substack, Facebook, X). The image is drawn by scripts/og-image.mjs. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Run The Numbers">
+<meta property="og:title" content="Run The Numbers: will your retirement savings last?">
+<meta property="og:description" content="A free retirement calculator for Canadians. Enter your savings, pensions, CPP and OAS, and see year by year whether the money lasts, after tax. Your numbers stay on your device.">
+<meta property="og:url" content="%SITE_URL%/">
+<meta property="og:image" content="%SITE_URL%/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Run The Numbers showing a couple's retirement projection: a verdict that the money lasts, and a chart of savings over time.">
+<meta property="og:locale" content="en_CA">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="author" content="%BUILT_BY%">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
@@ -19,10 +33,11 @@
   <header class="top">
     <div>
       <h1>Run The Numbers</h1>
-      <p class="sub">Retirement projection for Canadians, on your own or as a couple, in any province or territory, in today's dollars. <b>Your figures are kept in this browser only.</b></p>
+      <p class="sub">Retirement projection for Canadians, on your own or as a couple, in any province or territory, in today's dollars.</p>
     </div>
     <div class="head-right"><button class="btn" type="button" id="btnReport">Report (PDF)</button><button class="btn" type="button" id="btnQuick">Quick start</button><div class="scen" id="scenTabs" role="group" aria-label="Scenarios"></div></div>
   </header>
+  <p class="privacy"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5z"/></svg><span><b>Your numbers stay on your device.</b> There's no account, and nothing you enter is sent to a server.</span></p>
 
   <section class="quick" id="quick" hidden aria-labelledby="qTitle">
     <div class="q-card">
@@ -166,7 +181,7 @@
   </div>
   <footer class="site-foot">
     <p><b>Educational demo.</b> Not financial, tax or legal advice. Check your own figures with a qualified, fee-only planner.</p>
-    <p>Built with Claude. Tax and benefit figures are kept in Airtable, checked against CRA and provincial sources, and synced into this page.</p>
+    <p>Built by <a href="%BUILT_BY_URL%" rel="author">%BUILT_BY%</a> with Claude. Tax and benefit figures are kept in Airtable, checked against CRA and provincial sources, and synced into this page.</p>
   </footer>
 </div>
 </body>
