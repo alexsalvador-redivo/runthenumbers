@@ -128,6 +128,26 @@ const PLANS = {
 const PROVINCES = ["BC", "AB", "SK", "MB", "ON", "QC", "NB", "NS", "PE", "NL", "YT", "NT", "NU"];
 PROVINCES.forEach(p => { PLANS["base-couple-" + p.toLowerCase()] = plan({ house: { province: p } }); });
 
+// A single person in every province and territory.
+const BASE_SINGLE = { name: "Pat", birthYear: 1967, retireAge: 64, lifeAge: 92, salary: 95000, rrsp: 380000, tfsa: 90000, nonreg: 40000, rrspContrib: 12000, tfsaContrib: 7000, tfsaRoom: 15000, pension: 0, pensionStart: 65, cpp65: 1050, cppStart: 65, oasYears: 40, oasStart: 65 };
+PROVINCES.forEach(p => { PLANS["base-single-" + p.toLowerCase()] = single(BASE_SINGLE, { province: p, cash: 20000, spending: 58000, spendingLater: 50000, spendingChangeAge: 80, homeValue: 600000, mortgage: 0, mortgagePayment: 0 }); });
+
+// CPP sharing on, to pair with base-couple-bc (off). Uneven CPP so sharing matters.
+PLANS["base-couple-bc-cpp-share"] = plan({ people: [{ cpp65: 1350 }, { cpp65: 450 }], assume: { cppShare: "yes", cppShareYears: 100 } });
+PLANS["base-couple-bc-cpp-no-share"] = plan({ people: [{ cpp65: 1350 }, { cpp65: 450 }], assume: { cppShare: "no" } });
+
+// The example plan with an RRSP drawdown target of $55,000 (filled in from the page's EXAMPLE).
+const EXAMPLE_PATCHES = { "example-melt-55k": { assume: { meltTarget: 55000 } } };
+PLANS["example-melt-55k"] = null;
+
+// Spot checks: combined federal + provincial marginal rate on extra ordinary income, under 65.
+const MARGINAL = [
+  { province: "BC", age: 45, income: 30000, rate: 23.16 },
+  { province: "BC", age: 45, income: 80000, rate: 28.2 },
+  { province: "BC", age: 45, income: 150000, rate: 40.7 },
+  { province: "BC", age: 45, income: 300000, rate: 53.5 },
+];
+
 // Extra checks that run only on a few plans because they are slower.
 const FIND_TARGETS = ["example", "on-couple-delay-share-melt", "ab-single-high-income", "qc-couple-pension-split"];
 const MONTE_CARLO = { N: 500, plans: ["example", "sk-couple-runs-short", "qc-couple-pension-split"] };
@@ -146,4 +166,4 @@ const OLD_STORE = {
   } }],
 };
 
-module.exports = { DATES, PLANS, PROVINCES, FIND_TARGETS, MONTE_CARLO, QUICK_MC_N, OLD_STORE };
+module.exports = { DATES, PLANS, EXAMPLE_PATCHES, MARGINAL, PROVINCES, FIND_TARGETS, MONTE_CARLO, QUICK_MC_N, OLD_STORE };

@@ -42,6 +42,22 @@ Projection starts in 2026 with 18.8% of the year left.
 | base-couple-yt | YT | $358,551 | $0 | Never | $1,571,299 | 58% |
 | base-couple-nt | NT | $351,611 | $0 | Never | $1,581,741 | 58% |
 | base-couple-nu | NU | $308,844 | $0 | Never | $1,655,407 | 58% |
+| base-single-bc | BC | $184,325 | $0 | 2051 | $600,000 | 18% |
+| base-single-ab | AB | $186,892 | $0 | 2051 | $600,000 | 18% |
+| base-single-sk | SK | $209,430 | $0 | 2050 | $600,000 | 13% |
+| base-single-mb | MB | $233,016 | $0 | 2049 | $600,000 | 10% |
+| base-single-on | ON | $198,004 | $0 | 2051 | $600,000 | 17% |
+| base-single-qc | QC | $229,453 | $0 | 2049 | $600,000 | 10% |
+| base-single-nb | NB | $226,886 | $0 | 2049 | $600,000 | 10% |
+| base-single-ns | NS | $256,009 | $0 | 2047 | $600,000 | 10% |
+| base-single-pe | PE | $236,940 | $0 | 2048 | $600,000 | 10% |
+| base-single-nl | NL | $237,418 | $0 | 2049 | $600,000 | 10% |
+| base-single-yt | YT | $181,958 | $0 | 2052 | $600,000 | 18% |
+| base-single-nt | NT | $180,407 | $0 | 2052 | $600,000 | 18% |
+| base-single-nu | NU | $159,405 | $0 | 2053 | $600,000 | 22% |
+| base-couple-bc-cpp-share | BC | $340,767 | $0 | Never | $1,457,801 | 50% |
+| base-couple-bc-cpp-no-share | BC | $340,764 | $0 | Never | $1,457,807 | 50% |
+| example-melt-55k | BC | $349,187 | $0 | Never | $1,591,978 | 58% |
 
 ## Today pinned to 2026-12-20
 
@@ -80,4 +96,20 @@ Projection starts in 2027 (full first year).
 | base-couple-yt | YT | $349,924 | $0 | Never | $1,523,708 | 52% |
 | base-couple-nt | NT | $343,243 | $0 | Never | $1,533,745 | 52% |
 | base-couple-nu | NU | $301,380 | $0 | Never | $1,606,517 | 58% |
+| base-single-bc | BC | $180,042 | $0 | 2051 | $600,000 | 15% |
+| base-single-ab | AB | $182,591 | $0 | 2051 | $600,000 | 13% |
+| base-single-sk | SK | $204,605 | $0 | 2050 | $600,000 | 8% |
+| base-single-mb | MB | $228,666 | $0 | 2048 | $600,000 | 8% |
+| base-single-on | ON | $193,776 | $0 | 2050 | $600,000 | 13% |
+| base-single-qc | QC | $223,880 | $0 | 2048 | $600,000 | 8% |
+| base-single-nb | NB | $222,292 | $0 | 2049 | $600,000 | 8% |
+| base-single-ns | NS | $250,847 | $0 | 2047 | $600,000 | 8% |
+| base-single-pe | PE | $231,636 | $0 | 2048 | $600,000 | 8% |
+| base-single-nl | NL | $231,925 | $0 | 2048 | $600,000 | 8% |
+| base-single-yt | YT | $177,665 | $0 | 2051 | $600,000 | 15% |
+| base-single-nt | NT | $175,851 | $0 | 2051 | $600,000 | 15% |
+| base-single-nu | NU | $155,560 | $0 | 2053 | $600,000 | 23% |
+| base-couple-bc-cpp-share | BC | $331,992 | $0 | Never | $1,410,842 | 47% |
+| base-couple-bc-cpp-no-share | BC | $331,988 | $0 | Never | $1,410,850 | 47% |
+| example-melt-55k | BC | $340,418 | $0 | Never | $1,545,707 | 52% |
 

@@ -59,7 +59,9 @@ function engineInPage() {
 async function plansInPage(cases) {
   const R = window.__RTN, out = { meta: { START_YEAR: R.START_YEAR, F0: R.F0 }, plans: {} };
   for (const [name, d0] of Object.entries(cases.PLANS)) {
-    const d = d0 || R.clone(R.EXAMPLE), res = { simulate: R.simulate(R.clone(d)) };
+    let d = d0;
+    if (!d) { d = R.clone(R.EXAMPLE); const pt = cases.EXAMPLE_PATCHES[name] || {}; Object.assign(d.house, pt.house || {}); Object.assign(d.assume, pt.assume || {}); }
+    const res = { simulate: R.simulate(R.clone(d)) };
     res.quickMC = R.quickMC(R.clone(d), cases.QUICK_MC_N);
     if (cases.FIND_TARGETS.includes(name)) res.findTargets = R.findTargets(R.clone(d));
     if (cases.MONTE_CARLO.plans.includes(name)) {
@@ -81,6 +83,13 @@ async function plansInPage(cases) {
   out.migrate.store = old;
   out.migrate.simulate = R.simulate(R.clone(old.scenarios[0].data));
   return out;
+}
+
+// Marginal rate = tax on $1 more of ordinary income (not salary, so CPP/EI credits don't blur it).
+function marginalInPage(checks) {
+  const R = window.__RTN;
+  const tax = (c, x) => R.personTax(c.province, { salary: 0, other: x, pension: 0, cpp: 0, oas: 0, rrspW: 0, splitOut: 0, splitIn: 0, rrspDed: 0, elig: 0, age: c.age, single: true, pay: R.payroll(0) }).tax;
+  return checks.map(c => ({ ...c, got: Math.round((tax(c, c.income + 1) - tax(c, c.income)) * 10000) / 100 }));
 }
 
 /* ---------- compare ---------- */
@@ -128,10 +137,14 @@ function summary(meta, byDate) {
   const { html, taxDataSha256 } = readApp(APP_FILE);
   const browser = await launch();
   const actual = {}, byDate = {};
+  let marginal = [];
   try {
     for (const [date, iso] of Object.entries(C.DATES)) {
       const { context, page, errors } = await openApp({ browser, html, dateIso: iso });
-      if (!actual["engine.json"]) actual["engine.json"] = normalize({ taxDataSha256, ...(await page.evaluate(engineInPage)) });
+      if (!actual["engine.json"]) {
+        actual["engine.json"] = normalize({ taxDataSha256, ...(await page.evaluate(engineInPage)) });
+        marginal = await page.evaluate(marginalInPage, C.MARGINAL);
+      }
       const r = normalize(await page.evaluate(plansInPage, C));
       if (errors.length) throw new Error("The page threw while running: " + errors.join("; "));
       byDate[date] = r;
@@ -141,6 +154,11 @@ function summary(meta, byDate) {
       await context.close();
     }
   } finally { await browser.close(); }
+
+  // Fixed expectations, checked every run (also before re-recording)
+  const badRates = marginal.filter(m => m.got !== m.rate);
+  marginal.forEach(m => console.log((m.got === m.rate ? "✓" : "✗") + " " + m.province + " marginal rate at " + $(m.income) + ": expected " + m.rate + "%, got " + m.got + "%"));
+  if (badRates.length) { console.error("✗ " + badRates.length + " marginal-rate spot check(s) failed."); process.exitCode = 1; if (UPDATE) { console.error("Not re-recording while spot checks fail."); return; } }
 
   if (UPDATE) {
     fs.rmSync(GOLDEN, { recursive: true, force: true });
@@ -163,7 +181,7 @@ function summary(meta, byDate) {
   if (fs.existsSync(GOLDEN)) for (const f of walk(GOLDEN)) { const rel = path.relative(GOLDEN, f).split(path.sep).join("/"); if (rel.endsWith(".json") && !listed.has(rel)) failures.push([rel, ["saved snapshot has no matching case any more"]]); }
 
   const secs = ((Date.now() - t0) / 1000).toFixed(1);
-  if (!failures.length) { console.log("✓ All " + listed.size + " golden snapshots match exactly (" + secs + "s)."); return; }
+  if (!failures.length) { if (!badRates.length) console.log("✓ All " + listed.size + " golden snapshots match exactly (" + secs + "s)."); return; }
   console.error("✗ " + failures.length + " of " + listed.size + " snapshots changed (" + secs + "s):\n");
   for (const [rel, d] of failures) { console.error("  " + rel); d.forEach(x => console.error("    " + x)); }
   console.error("\nIf this change was meant to move results, get Alex's OK, then run: npm run golden:update");
