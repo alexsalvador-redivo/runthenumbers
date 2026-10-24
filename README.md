@@ -34,3 +34,11 @@ The tax and benefit figures live in an Airtable base and are copied into `src/da
 ## Sharing the link
 
 `site.config.json` holds the site's public address and the footer's "Built by" name and link. Link previews on LinkedIn, Substack and elsewhere need the full address, so update `url` there once the site has its Netlify address or a custom domain, then rebuild. After publishing, paste the link into LinkedIn's [Post Inspector](https://www.linkedin.com/post-inspector/) to check the preview and refresh LinkedIn's cached copy.
+
+## Publishing on Netlify
+
+`netlify.toml` tells Netlify to run `npm run build` and publish `dist/`. Once the GitHub repository is connected to a Netlify site, every push to `main` rebuilds and republishes it, and each pull request gets its own preview link.
+
+It also sets the security headers. The Content Security Policy allows nothing from outside the site (no outside scripts, fonts, images or connections), so the page has no way to send anyone's numbers elsewhere. The page, `sw.js`, `registerSW.js` and `manifest.webmanifest` are served with `Cache-Control: no-cache` so a new version is picked up on the next visit; the hashed files in `assets/` are cached for a year.
+
+To use your own domain later, add it in Netlify under **Domain management**, follow Netlify's DNS steps, then update `url` in `site.config.json`.
