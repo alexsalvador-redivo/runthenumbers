@@ -34,7 +34,9 @@ function drawChart(hoverIdx){
   // x labels: year + spouse 1 age
   c.textAlign="center"; c.textBaseline="top"; c.fillStyle=css("--muted");
   const step=Math.max(1,Math.ceil(rows.length/(w/62)));
-  rows.forEach((r,i)=>{ if(i%step===0||i===rows.length-1 && i%step>step/2){ c.fillText(String(r.year),X(i),T+h+6); c.fillText("age "+r.ages[0],X(i),T+h+20);} });
+  // the last year is labelled too when there's room; labels are kept inside the chart on narrow screens
+  const lastTick=Math.floor((rows.length-1)/step)*step, half=c.measureText("age 00").width/2+2;
+  rows.forEach((r,i)=>{ if(i%step===0||i===rows.length-1 && X(i)-X(lastTick)>=56){ const x=Math.min(X(i),W-half); c.fillText(String(r.year),x,T+h+6); c.fillText("age "+r.ages[0],x,T+h+20);} });
   // retirement lines
   c.setLineDash([4,4]); c.strokeStyle=css("--fg"); c.globalAlpha=.45;
   ppl(d).forEach(p=>{const i=rows.findIndex(r=>r.year===n(p.birthYear)+n(p.retireAge)); if(i>0){c.beginPath();c.moveTo(X(i)+.5,T);c.lineTo(X(i)+.5,T+h);c.stroke();}});
