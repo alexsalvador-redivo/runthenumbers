@@ -41,12 +41,25 @@ The whole app is one file today: `run-the-numbers.html` (HTML, CSS and vanilla J
 
 ## Testing
 
-There are no automated tests yet. The first job before any refactor is a golden-output test: run `simulate` (and the Monte Carlo with its fixed seed) on the example plan and a set of varied plans (single and couple, several provinces including QC and ON, deaths, events, drawdown, CPP sharing) with a pinned date, save the outputs, and compare to the last digit after every change.
+Golden-output tests lock in today's tax and simulation results. Run them before and after every change:
+
+```
+npm install                      # once; then `npx playwright install chromium` if Chromium isn't installed
+npm test                         # compares to tests/golden/, exact to the last digit
+npm run golden:update            # re-records the snapshots. Only after Alex OKs a change in results
+```
+
+- `tests/harness.js` opens `run-the-numbers.html` in headless Chromium with the date pinned, the time zone set to America/Toronto, and every network request blocked. The main script is an IIFE, so the harness serves a copy with one line added before the IIFE closes that exposes the engine as `window.__RTN`. The app file is never changed. If the code moves into modules, update the harness to import from there and check the snapshots still match.
+- `tests/cases.js` holds the households: the example plan, 17 varied plans (single and couple; BC, AB, SK, MB, ON, QC, NB, NS, PE, NL, YT, NT, NU; early CPP, delayed CPP/OAS, CPP sharing, partial and no OAS, OAS clawback, pension splitting on and off, RRIF minimums, RRSP drawdown, every withdrawal order, deaths before and after 65, survivor benefits, events, downsizing, long-term care, flexible spending, running short), and the base couple in all 13 provinces and territories. Each runs at two pinned dates: 2026-10-24 (partial first year) and 2026-12-20 (starts with a full 2027).
+- Saved per plan and date: the full `simulate` output, `quickMC`, and for some plans `findTargets` and a 500-run `mcRun` with the fixed seed. `engine.json` holds direct checks of `personTax` (all 14 jurisdictions), `houseTax`, `payroll`, `cppAnnual`, `oasAnnual`, `survCppAnnual`, `rrifFactor`, `onHealth`, and a SHA-256 of the tax data. `migrate.json` proves an old backup still restores.
+- `tests/golden/SUMMARY.md` is a readable table of the headline numbers.
+- GitHub Actions runs `npm test` on every push and pull request (`.github/workflows/golden-tests.yml`).
+- `node tests/golden.test.js --html some-copy.html` checks another copy of the app against the same snapshots.
 
 ## Roadmap
 
 1. Orient and plan (done): this file, git repository.
-2. Golden tests that lock in today's tax and simulation results.
+2. Golden tests that lock in today's tax and simulation results (done).
 3. Standalone page: proper HTML skeleton, self-hosted fonts and jsPDF, PDF saved as a normal browser download, and the Claude-only features (Ask about your plan, Explain these plans) removed for version 1 (Alex's decision, 2026-10-24).
 4. PWA: manifest, icons, service worker for offline use, install prompt.
 5. Netlify: `netlify.toml`, security headers (strict CSP with no outside connections), deploy from GitHub.

@@ -1,3 +1,5 @@
 # Run The Numbers
 
-Files for the Run The Numbers retirement scenarios app go in this folder.
+A retirement projection calculator for Canadians. The whole app is `run-the-numbers.html`.
+
+Tests: `npm install`, then `npm test`. See CLAUDE.md for details.

@@ -1,0 +1,1942 @@
+{
+ "simulate": {
+  "rows": [
+   {
+    "year": 2026,
+    "ages": [
+     54
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 24395.144117423377,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 0,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 3917.600505862803,
+    "claw": 0,
+    "payroll": 1082.6790145258194,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     20876.6164
+    ],
+    "netPer": [
+     110873
+    ],
+    "avgRate": 0.1605893569230769,
+    "totInc": 24395.144117423377,
+    "retired": false,
+    "spend": 14074.121606205796,
+    "mortPay": 4393.872111205712,
+    "contrib": 4691.373868735265,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 3753.099094988212,
+     "nonreg": 11.403894123806447,
+     "rrsp": 0,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 305024.5779963888,
+     "tfsa": 71700.6875546749,
+     "nonreg": 40205.66134591085,
+     "cash": 16246.900905011787
+    },
+    "total": 433177.82780198636,
+    "homeEq": 1227301.1841761128,
+    "survCpp": 0,
+    "partial": 0.1876549547494106
+   },
+   {
+    "year": 2027,
+    "ages": [
+     55
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 130000,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 0,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 20876.6164,
+    "claw": 0,
+    "payroll": 5769.5199999999995,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     20876.6164
+    ],
+    "netPer": [
+     110873
+    ],
+    "avgRate": 0.1605893569230769,
+    "totInc": 130000,
+    "retired": false,
+    "spend": 75000,
+    "mortPay": 22843.54550862582,
+    "contrib": 25000,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 16246.900905011787,
+     "nonreg": 3242.781003614031,
+     "rrsp": 0,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 332478.95588896604,
+     "tfsa": 81004.12231237271,
+     "nonreg": 38044.72074255917,
+     "cash": 0
+    },
+    "total": 451527.79894389794,
+    "homeEq": 1246774.996693053,
+    "survCpp": 0
+   },
+   {
+    "year": 2028,
+    "ages": [
+     56
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 130000,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 0,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 20876.6164,
+    "claw": 0,
+    "payroll": 5769.5199999999995,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     20876.6164
+    ],
+    "netPer": [
+     110873
+    ],
+    "avgRate": 0.1605893569230769,
+    "totInc": 130000,
+    "retired": false,
+    "spend": 75000,
+    "mortPay": 22286.385862073977,
+    "contrib": 25000,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 18932.52226207398,
+     "rrsp": 0,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 360736.8765491309,
+     "tfsa": 90579.85272151533,
+     "nonreg": 19671.57989942622,
+     "cash": 0
+    },
+    "total": 470988.30917007243,
+    "homeEq": 1266071.6263930402,
+    "survCpp": 0
+   },
+   {
+    "year": 2029,
+    "ages": [
+     57
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 130000,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 0,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 20876.6164,
+    "claw": 0,
+    "payroll": 5769.5199999999995,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     20876.6164
+    ],
+    "netPer": [
+     110873
+    ],
+    "avgRate": 0.1605893569230769,
+    "totInc": 130000,
+    "retired": false,
+    "spend": 75000,
+    "mortPay": 21742.815475194126,
+    "contrib": 25000,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 18388.951875194136,
+     "rrsp": 0,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 389821.8583017884,
+     "tfsa": 100435.84841092554,
+     "nonreg": 1320.1683566486315,
+     "cash": 0
+    },
+    "total": 491577.8750693626,
+    "homeEq": 1285201.2053100497,
+    "survCpp": 0
+   },
+   {
+    "year": 2030,
+    "ages": [
+     58
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 130000,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 0,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 29237.29814984665,
+    "claw": 0,
+    "payroll": 5769.5199999999995,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     29237.29814984665
+    ],
+    "netPer": [
+     135772.20499956186
+    ],
+    "avgRate": 0.18875047260526193,
+    "totInc": 154899.20499956186,
+    "retired": false,
+    "spend": 75000,
+    "mortPay": 21212.502902628417,
+    "contrib": 25000,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 1320.1683566486315,
+     "rrsp": 24899.204999561858,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 394130.14559399907,
+     "tfsa": 110580.31226685506,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 504710.4578608541,
+    "homeEq": 1304173.731730923,
+    "survCpp": 0
+   },
+   {
+    "year": 2031,
+    "ages": [
+     59
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 130000,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 0,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 29669.571631356645,
+    "claw": 0,
+    "payroll": 5769.5199999999995,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     29669.571631356645
+    ],
+    "netPer": [
+     137007.2720895904
+    ],
+    "avgRate": 0.1900260028389676,
+    "totInc": 156134.2720895904,
+    "retired": false,
+    "spend": 75000,
+    "mortPay": 20695.124783052113,
+    "contrib": 25000,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 26134.272089590413,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 397293.3137045377,
+     "tfsa": 121021.6872600313,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 518315.000964569,
+    "homeEq": 1322999.0756697005,
+    "survCpp": 0
+   },
+   {
+    "year": 2032,
+    "ages": [
+     60
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 130000,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 0,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 29397.76316364551,
+    "claw": 0,
+    "payroll": 5769.5199999999995,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     29397.76316364551
+    ],
+    "netPer": [
+     136230.6764675586
+    ],
+    "avgRate": 0.1892263313411763,
+    "totInc": 155357.6764675586,
+    "retired": false,
+    "spend": 75000,
+    "mortPay": 20190.365642002063,
+    "contrib": 25000,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 25357.67646755861,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 401348.3875951346,
+     "tfsa": 131768.66347252004,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 533117.0510676546,
+    "homeEq": 1341686.984251599,
+    "survCpp": 0
+   },
+   {
+    "year": 2033,
+    "ages": [
+     61
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 130000,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 0,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 29132.607314968882,
+    "claw": 0,
+    "payroll": 5769.5199999999995,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     29132.607314968882
+    ],
+    "netPer": [
+     135473.08832848252
+    ],
+    "avgRate": 0.18843849075344724,
+    "totInc": 154600.08832848252,
+    "retired": false,
+    "spend": 75000,
+    "mortPay": 19697.91769951421,
+    "contrib": 25000,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 24600.088328482525,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 406301.90802567604,
+     "tfsa": 142830.18533025234,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 549132.0933559283,
+    "homeEq": 1360247.0870096812,
+    "survCpp": 0
+   },
+   {
+    "year": 2034,
+    "ages": [
+     62
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 130000,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 0,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 28873.892348734713,
+    "claw": 0,
+    "payroll": 5769.5199999999995,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     28873.892348734713
+    ],
+    "netPer": [
+     134733.9027106706
+    ],
+    "avgRate": 0.1876623095279178,
+    "totInc": 153860.9027106706,
+    "retired": false,
+    "spend": 75000,
+    "mortPay": 19217.48068245289,
+    "contrib": 25000,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 23860.90271067059,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 412161.2298608105,
+     "tfsa": 154215.45904723534,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 566376.6889080459,
+    "homeEq": 1378688.901097201,
+    "survCpp": 0
+   },
+   {
+    "year": 2035,
+    "ages": [
+     63
+    ],
+    "events": [
+     "Ari retires"
+    ],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 23407.536264745493,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     23407.536264745493
+    ],
+    "netPer": [
+     117156.33218498711
+    ],
+    "avgRate": 0.19979744865847746,
+    "totInc": 117156.33218498711,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 18748.761641417455,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 82156.33218498711,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 339663.57760779874,
+     "tfsa": 158729.08223886174,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 498392.65984666045,
+    "homeEq": 1397021.8364185637,
+    "survCpp": 0
+   },
+   {
+    "year": 2036,
+    "ages": [
+     64
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 17285.96095421602,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     17285.96095421602
+    ],
+    "netPer": [
+     95322.27619714917
+    ],
+    "avgRate": 0.18134230154622552,
+    "totInc": 95322.27619714917,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 3036.2740903422455,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 60322.27619714917,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 287517.1443787661,
+     "tfsa": 163374.8114751211,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 450891.95585388725,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2037,
+    "ages": [
+     65
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 15297.361227898658,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     15297.361227898658
+    ],
+    "netPer": [
+     90297.38486059158
+    ],
+    "avgRate": 0.1694108999005449,
+    "totInc": 90297.38486059158,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 55297.38486059158,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 239016.43540651136,
+     "tfsa": 168156.51327439293,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 407172.9486809043,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2038,
+    "ages": [
+     66
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 15297.368204835959,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     15297.368204835959
+    ],
+    "netPer": [
+     90297.40796303297
+    ],
+    "avgRate": 0.16941093382324526,
+    "totInc": 90297.40796303297,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 55297.407963032965,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 189096.1697101168,
+     "tfsa": 173078.16732144833,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 362174.33703156514,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2039,
+    "ages": [
+     67
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 0,
+    "oas": 0,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 15297.359318821547,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     15297.359318821547
+    ],
+    "netPer": [
+     90297.37853914419
+    ],
+    "avgRate": 0.16941089061838152,
+    "totInc": 90297.37853914419,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 55297.37853914419,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 137714.85335158647,
+     "tfsa": 178143.86977963705,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 315858.7231312235,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2040,
+    "ages": [
+     68
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 0,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 15297.357527619864,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     15297.357527619864
+    ],
+    "netPer": [
+     90297.3726080128
+    ],
+    "avgRate": 0.1694108819093415,
+    "totInc": 90297.3726080128,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 37268.57260801279,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 103386.17188728803,
+     "tfsa": 183357.8367000167,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 286744.00858730474,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2041,
+    "ages": [
+     69
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 11785.2,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 15297.354291328878,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     15297.354291328878
+    ],
+    "netPer": [
+     90297.36189181748
+    ],
+    "avgRate": 0.169410866174099,
+    "totInc": 90297.36189181748,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 25483.361891817483,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 80182.8922392404,
+     "tfsa": 188724.4075302611,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 268907.2997695015,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2042,
+    "ages": [
+     70
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 11785.2,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 15297.356550908062,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     15297.356550908062
+    ],
+    "netPer": [
+     90297.36937386775
+    ],
+    "avgRate": 0.1694108771604497,
+    "totInc": 90297.36937386775,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 25483.36937386776,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 56300.484510212824,
+     "tfsa": 194248.04872626872,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 250548.53323648154,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2043,
+    "ages": [
+     71
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 11785.2,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 15297.353068242619,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     15297.353068242619
+    ],
+    "netPer": [
+     90297.35784186298
+    ],
+    "avgRate": 0.1694108602273031,
+    "totInc": 90297.35784186298,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 25483.357841862984,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 31719.091351325933,
+     "tfsa": 199933.35746947658,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 231652.44882080253,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2044,
+    "ages": [
+     72
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 11785.2,
+    "pen": 35000,
+    "rrifMin": 1674.7680233500093,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 15297.352138115595,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     15297.352138115595
+    ],
+    "netPer": [
+     90297.35476197216
+    ],
+    "avgRate": 0.16941085570491068,
+    "totInc": 90297.35476197216,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 23808.58673862215,
+     "tfsa": 0
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 6418.245952944614,
+     "tfsa": 205785.06549297346,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 212203.31144591808,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2045,
+    "ages": [
+     73
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 11785.2,
+    "pen": 35000,
+    "rrifMin": 346.58528145900914,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 9539.689277789275,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     9539.689277789275
+    ],
+    "netPer": [
+     71232.24595294462
+    ],
+    "avgRate": 0.1339237468953472,
+    "totInc": 71232.24595294462,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 6071.660671485605,
+     "tfsa": 13307.443324844658
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 198111.1135486594,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 198111.1135486594,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2046,
+    "ages": [
+     74
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 11785.2,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7601.379000000001,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7601.379000000001
+    ],
+    "netPer": [
+     64814
+    ],
+    "avgRate": 0.11727989323294351,
+    "totInc": 64814,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 17787.379
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 185601.50238910798,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 185601.50238910798,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2047,
+    "ages": [
+     75
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 16964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 173572.4395300575,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 173572.4395300575,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2048,
+    "ages": [
+     76
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 16964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 161191.306538547,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 161191.306538547,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2049,
+    "ages": [
+     77
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 75000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 16964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 148447.79892289476,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 148447.79892289476,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2050,
+    "ages": [
+     78
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 145623.99352336972,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 145623.99352336972,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2051,
+    "ages": [
+     79
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 142717.54016093176,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 142717.54016093176,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2052,
+    "ages": [
+     80
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 139726.01987081268,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 139726.01987081268,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2053,
+    "ages": [
+     81
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 136646.94288927552,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 136646.94288927552,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2054,
+    "ages": [
+     82
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 133477.74658144944,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 133477.74658144944,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2055,
+    "ages": [
+     83
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 130215.79330851625,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 130215.79330851625,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2056,
+    "ages": [
+     84
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 126858.36823247283,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 126858.36823247283,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2057,
+    "ages": [
+     85
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 123402.67705664277,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 123402.67705664277,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2058,
+    "ages": [
+     86
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 119845.84370005672,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 119845.84370005672,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2059,
+    "ages": [
+     87
+    ],
+    "events": [],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 116184.9079037657,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 116184.9079037657,
+    "homeEq": 1400000,
+    "survCpp": 0
+   },
+   {
+    "year": 2060,
+    "ages": [
+     88
+    ],
+    "events": [
+     "Ari passes away at 88"
+    ],
+    "alive": [
+     true
+    ],
+    "work": 0,
+    "cpp": 18028.8,
+    "oas": 12963.720000000001,
+    "pen": 35000,
+    "rrifMin": 0,
+    "melt": 0,
+    "tfsaIn": 0,
+    "cppShared": 0,
+    "tax": 7957.292040000002,
+    "claw": 0,
+    "payroll": 0,
+    "split": 0,
+    "splitFrom": -1,
+    "taxPer": [
+     7957.292040000002
+    ],
+    "netPer": [
+     65992.52
+    ],
+    "avgRate": 0.12057869649469366,
+    "totInc": 65992.52,
+    "retired": true,
+    "spend": 65000,
+    "mortPay": 0,
+    "contrib": 0,
+    "evExp": 0,
+    "evIn": 0,
+    "ltc": 0,
+    "wd": {
+     "cash": 0,
+     "nonreg": 0,
+     "rrsp": 0,
+     "tfsa": 6964.772039999996
+    },
+    "saved": 0,
+    "short": 0,
+    "bal": {
+     "rrsp": 0,
+     "tfsa": 112416.82276709544,
+     "nonreg": 0,
+     "cash": 0
+    },
+    "total": 112416.82276709544,
+    "homeEq": 1400000,
+    "survCpp": 0
+   }
+  ],
+  "firstShort": null,
+  "lifeTax": 504474.0986989377,
+  "lifeClaw": 0,
+  "estateTax": 0,
+  "estate": 1512416.8227670954
+ },
+ "quickMC": 60
+}
