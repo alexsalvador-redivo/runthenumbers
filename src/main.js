@@ -1,4 +1,5 @@
 // Run The Numbers: entry point. Loads the styles and every screen, then shows the quick start.
+import "./fonts.css";
 import "./styles.css";
 import {TD} from "./engine/benefits.js";
 import {esc} from "./ui/format.js";
