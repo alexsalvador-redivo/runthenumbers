@@ -10,7 +10,7 @@ import {render} from "./results.js";
 
 /* ---------- quick start ---------- */
 const Q={mode:"couple",names:["",""],birth:["",""],retire:["",""],rrsp:["",""],tfsa:["",""],other:"",cash:"",salary:["",""],save:"",pension:["",""],cpp:["",""],
-  province:"BC",home:"",mortgage:"",mortPay:"",spending:""};
+  province:"BC",home:"",mortgage:"",mortPay:"",spending:"",years:"30",returnRate:"5"};
 let qStep=0;
 const nm=i=>Q.names[i]||(i?"Your partner":"You");
 const qCols=()=>Q.mode==="single"?[0]:[0,1];
@@ -25,15 +25,18 @@ const Q_STEPS=[
   {title:"Your home",lead:"Home equity is counted in your estate. Your mortgage payments are part of your spending until it's paid off.",
    rows:()=>[["home","Home value","$1"],["mortgage","Mortgage or HELOC owing","$1","leave blank if none"],["mortPay","Monthly payment","$1"]]},
   {title:"Spending in retirement",lead:"How much you want to spend each year in retirement, in today's dollars, not counting mortgage payments. Many people plan for about 70% of what they spend now.",
-   rows:()=>[["spending","Spending per year","$1"]],
-   check:()=>{if(!(+Q.spending>0)) return "Enter how much you'd like to spend each year.";}}
+   rows:()=>[["spending","Spending per year","$1"],["years","Years your money must last","int1",Q.mode==="single"?"after you retire. 30 is a common choice":"after each of you retires. 30 is a common choice"],["returnRate","Investment return","%1","per year, before inflation, after fees"]],
+   check:()=>{if(!(+Q.spending>0)) return "Enter how much you'd like to spend each year.";
+     const y=+Q.years; if(!(y>=5&&y<=50)) return "Enter between 5 and 50 years.";
+     for(const i of qCols()){const end=+Q.retire[i]+y; if(end>110) return "That's past age 110 for "+nm(i)+". Try fewer years."; if(+Q.birth[i]+end<=new Date().getFullYear()) return nm(i)+" is already past that point. Try more years.";}
+     const r=Q.returnRate; if(r===""||!(+r>=0&&+r<=15)) return "Enter an investment return between 0% and 15%.";}}
 ];
 function qField(key,type,i,ph){
-  const w=document.createElement("div"); w.className="field"+(type.startsWith("$")?" money":"");
+  const w=document.createElement("div"); w.className="field"+(type.startsWith("$")?" money":type==="%"?" pct":"");
   let el;
   if(type==="mode1"){el=document.createElement("select"); [["couple","Me and a partner"],["single","Just me"]].forEach(([v,l])=>{const op=document.createElement("option");op.value=v;op.textContent=l;el.appendChild(op);}); el.addEventListener("change",()=>{readQ(); renderQ();});}
   else if(type==="prov1"){el=document.createElement("select"); Object.entries(PROV).sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([v,o])=>{const op=document.createElement("option");op.value=v;op.textContent=o.name;el.appendChild(op);});}
-  else{el=document.createElement("input"); el.type=type==="text"?"text":"number"; if(type!=="text"){el.inputMode="decimal";el.min="0";el.step=type==="int"?"1":"1000";} if(ph) el.placeholder=ph;}
+  else{el=document.createElement("input"); el.type=type==="text"?"text":"number"; if(type!=="text"){el.inputMode="decimal";el.min="0";el.step=type==="int"?"1":type==="%"?"0.1":"1000";} if(ph) el.placeholder=ph;}
   const v=i==null?Q[key]:Q[key][i]; el.value=v==null?"":v;
   el.id="q_"+key+(i==null?"":"_"+i); el.dataset.k=key; if(i!=null) el.dataset.i=i;
   w.appendChild(el); return w;
@@ -46,7 +49,7 @@ function renderQ(){
   document.getElementById("qErr").textContent="";
   document.getElementById("qBack").style.visibility=qStep?"visible":"hidden";
   document.getElementById("qNext").textContent=qStep===Q_STEPS.length-1?"See my results":"Next";
-  const isOne=t=>t==="$1"||t==="prov1"||t==="mode1", cols=qCols();
+  const isOne=t=>t.endsWith("1"), cols=qCols();
   body.className="q-body"+(cols.length===1?" one":"");
   const pairs=st.rows().some(r=>!isOne(r[2]));
   if(pairs&&cols.length>1){ const b=document.createElement("div"); b.className="blank"; body.appendChild(b);
@@ -56,10 +59,11 @@ function renderQ(){
     const l=document.createElement("label"); l.htmlFor="q_"+key+(single?"":"_0"); l.textContent=label;
     if(typeof hint==="string"){const sm=document.createElement("small"); sm.textContent=hint; l.appendChild(sm);}
     body.appendChild(l);
-    if(single){const f=qField(key,type==="$1"?"$":type); if(cols.length>1) f.classList.add("span2"); body.appendChild(f);}
+    if(single){const f=qField(key,type==="$1"||type==="int1"||type==="%1"?type.slice(0,-1):type); if(cols.length>1) f.classList.add("span2"); body.appendChild(f);}
     else cols.forEach(i=>{const f=qField(key,type,i,Array.isArray(hint)?hint[i]:""); f.firstChild.setAttribute("aria-label",label+" for "+nm(i)); body.appendChild(f);});
   });
   if(qStep===2){const nt=document.createElement("p"); nt.className="q-note"; nt.textContent="We'll assume CPP and OAS start at 65 and full OAS (40 years in Canada). You can change both later."; body.appendChild(nt);}
+  if(qStep===Q_STEPS.length-1){const nt=document.createElement("p"); nt.className="q-note"; nt.textContent="We'll assume prices rise 2.5% a year. Results are in today's dollars, so a 5% return works out to about 2.4% a year after inflation. You can change both later."; body.appendChild(nt);}
   if(qStep===0&&Q.mode==="couple"){const nt=document.createElement("p"); nt.className="q-note"; nt.textContent="Planning for a couple? We'll ask about each of you side by side."; body.appendChild(nt);}
   const first=body.querySelector("input,select"); if(first) first.focus({preventScroll:true});
 }
@@ -69,14 +73,14 @@ function buildFromQ(){
   d.people.forEach((p,i)=>{
     if(Q.mode==="single"&&i>0){ p.name="Partner"; return; }  // kept only in case they switch to a couple later
     const sal=n(Q.salary[i]);
-    Object.assign(p,{name:Q.names[i].trim()||(Q.mode==="single"?"You":(i?"Spouse 2":"Spouse 1")),birthYear:n(Q.birth[i]),retireAge:n(Q.retire[i]),lifeAge:95,salary:sal,
+    Object.assign(p,{name:Q.names[i].trim()||(Q.mode==="single"?"You":(i?"Spouse 2":"Spouse 1")),birthYear:n(Q.birth[i]),retireAge:n(Q.retire[i]),lifeAge:n(Q.retire[i])+n(Q.years),salary:sal,
       rrsp:n(Q.rrsp[i]),tfsa:n(Q.tfsa[i]),nonreg:n(Q.other)/(Q.mode==="single"?1:2),tfsaRoom:0,pension:n(Q.pension[i]),pensionStart:n(Q.retire[i]),survPct:60,
       cpp65:Q.cpp[i]!==""?n(Q.cpp[i]):Math.round(CPP_MAX_65*clamp(sal/PAY.ympe,0,1)*0.8),cppStart:65,oasYears:40,oasStart:65});
     const half=n(Q.save)/(Q.mode==="single"?1:2); p.tfsaContrib=Math.min(TFSA_ROOM,half); p.rrspContrib=Math.max(0,half-TFSA_ROOM);
   });
   Object.assign(d.house,{mode:Q.mode,province:Q.province||"BC",cash:n(Q.cash),spending:n(Q.spending),spendingLater:n(Q.spending),spendingChangeAge:0,survivorSpend:70,
     homeValue:n(Q.home),mortgage:n(Q.mortgage),mortgageRate:4.5,mortgagePayment:n(Q.mortPay)*12,downsizeAge:0,downsizeAmount:0,ltcCost:0,ltcAge:85,events:[]});
-  d.assume.meltTarget=0;
+  d.assume.meltTarget=0; d.assume.returnRate=n(Q.returnRate);
   return d;
 }
 function showQuick(on){
