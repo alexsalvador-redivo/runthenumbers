@@ -26,6 +26,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15
 header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:18px}
 h1{font-family:var(--f-display);font-weight:700;font-size:clamp(26px,3.4vw,36px);letter-spacing:-.02em;margin:0;line-height:1.05}
 .sub{color:var(--muted);margin:4px 0 0;max-width:60ch}
+.sub.disclaimer{font-size:13px}
 .privacy{display:flex;align-items:flex-start;gap:8px;margin:-6px 0 18px;padding:8px 12px;border-radius:10px;background:var(--accent-soft);color:var(--fg);font-size:13.5px;max-width:max-content}
 .privacy svg{flex:none;margin-top:2px;color:var(--accent)}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
